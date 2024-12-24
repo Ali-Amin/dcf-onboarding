@@ -1,0 +1,5 @@
+{
+  "daemon": {
+  "playbook": "/root/dev/CLEVER/secure-onboarding/dcf-apps-go/scripts/ansible/dcf.yaml",
+  "onboardingUrl":"http://0.0.0.0:35000"
+}

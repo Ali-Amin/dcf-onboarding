@@ -1,0 +1,56 @@
+{
+  "discovery": {
+    "type": "k8s",
+    "config": {
+      "inCluster": false,
+      "kubeconfigPath": "/root/dev/CLEVER/secure-onboarding/dcf-apps-go/kubeconfig"
+    }
+  },
+  "daemon": {
+    "playbook": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/ansible/dcf.yaml",
+    "binaryPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/dcfagent",
+    "systemdUnitPath": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/systemd/dcfagent.service.j2",
+    "onboardingUrl":"http://0.0.0.0:35000"
+  },
+  "server" : {
+    "protocol": "http",
+    "port":"3010",
+    "host":"0.0.0.0"
+  },
+  "sdk": {
+    "annotators": ["tpm","pki"],
+    "hash": {
+      "type": "sha256"
+    },
+    "signature": {
+      "public": {
+	"type": "ed25519",
+	"path": "./cmd/res/keys/ed25519/public.key"
+      },
+      "private": {
+	"type": "ed25519",
+	"path": "./cmd/res/keys/ed25519/private.key"
+      }
+    },
+    "stream": {
+      "type": "mqtt",
+      "config": {
+        "clientId": "alvarium-test",
+	"qos": 0,
+	"user": "mosquitto",
+	"password": "",
+	"provider": {
+	  "host": "0.0.0.0",
+	  "protocol": "tcp",
+	  "port": 1883
+	},
+	"cleanness": false,
+	"topics": ["alvarium-test-topic"]
+      }
+    },
+    "layer": "app"
+  },
+  "logging": {
+    "minLogLevel": "debug"
+  }
+}

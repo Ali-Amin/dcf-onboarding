@@ -1,0 +1,28 @@
+---
+
+- hosts: 127.0.0.1
+  gather_facts: false
+  vars:
+    agent_binary_path: na
+    systemd_unit_path: na
+  tasks:
+    - name: "Copy DCF agent binary"
+      copy:
+        # src: /root/dev/CLEVER/secure-onboarding/onboarding/dcfagent
+        src: "{{ agent_binary_path }}"
+        dest: /tmp/dcfagent
+        mode: 0755
+
+    - name: "Copy dcfagent systemd file"
+      template:
+        src: "{{ systemd_unit_path }}"
+        #/root/dev/CLEVER/secure-onboarding/onboarding/dcfagent.service.j2
+        dest: /etc/systemd/system/dcfagent.service
+        owner: root
+        mode: 0644
+
+    - name: "Start DCF Agent daemon"
+      systemd:
+        name: dcfagent
+        state: started
+        enabled: True
