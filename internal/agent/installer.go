@@ -28,6 +28,7 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string) error {
 		ExtraVars: map[string]interface{}{
 			string(contracts.AgentPath):            cfg.BinaryPath,
 			string(contracts.AgentSystemdUnitPath): cfg.SystemdUnitPath,
+			string(contracts.OnboarderURL):         cfg.OnboardingURL,
 		},
 	}
 

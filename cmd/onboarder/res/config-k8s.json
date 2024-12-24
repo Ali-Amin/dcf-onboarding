@@ -10,7 +10,7 @@
     "playbook": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/ansible/dcf.yaml",
     "binaryPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/dcfagent",
     "systemdUnitPath": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/systemd/dcfagent.service.j2",
-    "onboardingUrl":"http://0.0.0.0:35000"
+    "onboardingUrl":"http://0.0.0.0:3010"
   },
   "server" : {
     "protocol": "http",

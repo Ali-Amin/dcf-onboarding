@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 
-	"clever.secure-onboard.com/internal/agent"
 	"clever.secure-onboard.com/internal/annotators"
 	"clever.secure-onboard.com/internal/bootstrap"
 	"clever.secure-onboard.com/internal/config"
@@ -57,7 +56,6 @@ func main() {
 	}
 	identityVerifier := factories.NewDeviceIdentityVerifier(alvariumSDK, logger)
 
-	agent.RemoteInstall(cfg.Daemon, []string{"127.0.0.1"})
 	nodeDiscoverer.OnNewNode(func(node contracts.Node) {
 		// TODO: REMOVE COMMENT		agent.RemoteInstall(cfg.Daemon, []string{node.IP})
 		logger.Write(slog.LevelDebug, fmt.Sprintf("Found node: %s", node))
@@ -67,7 +65,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(ctx, cancel, &cfg, []bootstrap.BootstrapHandler{
-		// alvariumSDK.BootstrapHandler,
+		alvariumSDK.BootstrapHandler,
 		// nodeDiscoverer.Bootstrap,
 		server.Bootstrap,
 	})

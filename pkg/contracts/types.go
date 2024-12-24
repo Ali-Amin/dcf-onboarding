@@ -24,6 +24,7 @@ func NewNodeFromK8sNode(node corev1.Node) Node {
 type AnsibleVars string
 
 const (
-	AgentPath            AnsibleVars = "agent_binary_path" //"./cmd/agent/dcfagent"
-	AgentSystemdUnitPath AnsibleVars = "systemd_unit_path" //"./scripts/systemd2/dcfagent.service.j2"
+	AgentPath            AnsibleVars = "agent_binary_path"
+	AgentSystemdUnitPath AnsibleVars = "systemd_unit_path"
+	OnboarderURL         AnsibleVars = "onboarder_url"
 )

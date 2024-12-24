@@ -5,6 +5,7 @@
   vars:
     agent_binary_path: na
     systemd_unit_path: na
+    onboarder_url: "{{ onboarder_url }}"
   tasks:
     - name: "Copy DCF agent binary"
       copy:
@@ -26,3 +27,4 @@
         name: dcfagent
         state: started
         enabled: True
+        daemon_reload: True

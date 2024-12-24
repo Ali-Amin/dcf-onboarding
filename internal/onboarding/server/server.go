@@ -54,7 +54,7 @@ func (s *OnboardingServer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) bo
 			if err != nil {
 				s.logger.Error(err.Error())
 			}
-			s.logger.Write(slog.LevelInfo, "Shutdown received for HTTP proxy")
+			s.logger.Write(slog.LevelInfo, "Shutdown received for onboarding server")
 		}
 	}()
 
