@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 
+	"clever.secure-onboard.com/internal/agent"
 	"clever.secure-onboard.com/internal/annotators"
 	"clever.secure-onboard.com/internal/bootstrap"
 	"clever.secure-onboard.com/internal/config"
@@ -46,7 +47,7 @@ func main() {
 	logger.Write(slog.LevelDebug, "config loaded successfully")
 	logger.Write(slog.LevelDebug, cfg.AsString())
 
-	annotators := []interfaces.Annotator{&annotators.DeviceIdentityAnnotator{}}
+	annotators := []interfaces.Annotator{annotators.NewDeviceIdentityAnnotator(cfg.AlvariumSDK)}
 	alvariumSDK := alvarium.NewSdk(annotators, cfg.AlvariumSDK, logger)
 
 	nodeDiscoverer, err := factories.NewNodeDiscoverer(cfg.NodeDiscoverer, logger)
@@ -56,6 +57,7 @@ func main() {
 	}
 	identityVerifier := factories.NewDeviceIdentityVerifier(alvariumSDK, logger)
 
+	agent.RemoteInstall(cfg.Daemon, []string{"127.0.0.1"})
 	nodeDiscoverer.OnNewNode(func(node contracts.Node) {
 		// TODO: REMOVE COMMENT		agent.RemoteInstall(cfg.Daemon, []string{node.IP})
 		logger.Write(slog.LevelDebug, fmt.Sprintf("Found node: %s", node))

@@ -29,6 +29,8 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string) error {
 			string(contracts.AgentPath):            cfg.BinaryPath,
 			string(contracts.AgentSystemdUnitPath): cfg.SystemdUnitPath,
 			string(contracts.OnboarderURL):         cfg.OnboardingURL,
+			string(contracts.CFGPath):              cfg.ConfigPath,
+			string(contracts.PrivKeyPath):          cfg.PrivKeyPath,
 		},
 	}
 

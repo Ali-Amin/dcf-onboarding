@@ -10,7 +10,9 @@
     "playbook": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/ansible/dcf.yaml",
     "binaryPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/dcfagent",
     "systemdUnitPath": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/systemd/dcfagent.service.j2",
-    "onboardingUrl":"http://0.0.0.0:3010"
+    "onboardingUrl":"http://0.0.0.0:3010",
+    "configPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/config.json",
+    "privKeyPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/private.key"
   },
   "server" : {
     "protocol": "http",
@@ -18,24 +20,24 @@
     "host":"0.0.0.0"
   },
   "sdk": {
-    "annotators": ["tpm","pki"],
+    "annotators": [],
     "hash": {
       "type": "sha256"
     },
     "signature": {
       "public": {
 	"type": "ed25519",
-	"path": "./cmd/res/keys/ed25519/public.key"
+	"path": "./cmd/res/keys/public.key"
       },
       "private": {
 	"type": "ed25519",
-	"path": "./cmd/res/keys/ed25519/private.key"
+	"path": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/onboarder/res/private.key"
       }
     },
     "stream": {
       "type": "mqtt",
       "config": {
-        "clientId": "alvarium-test",
+        "clientId": "onboarding-service",
 	"qos": 0,
 	"user": "mosquitto",
 	"password": "",
@@ -48,7 +50,7 @@
 	"topics": ["alvarium-test-topic"]
       }
     },
-    "layer": "app"
+    "layer": "host"
   },
   "logging": {
     "minLogLevel": "debug"

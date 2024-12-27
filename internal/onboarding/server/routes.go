@@ -114,11 +114,9 @@ func (r *Router) getChallengeToken(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Write(response)
-	w.WriteHeader(http.StatusOK)
 }
 
 func (r *Router) verifyChallengeAnswer(w http.ResponseWriter, req *http.Request) {
-	w.WriteHeader(http.StatusAccepted)
 	deviceID := chi.URLParam(req, "deviceID")
 	r.logger.Write(
 		slog.LevelDebug,
@@ -153,5 +151,6 @@ func (r *Router) verifyChallengeAnswer(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Write(resData)
 }

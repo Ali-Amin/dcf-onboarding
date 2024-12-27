@@ -27,4 +27,6 @@ const (
 	AgentPath            AnsibleVars = "agent_binary_path"
 	AgentSystemdUnitPath AnsibleVars = "systemd_unit_path"
 	OnboarderURL         AnsibleVars = "onboarder_url"
+	CFGPath              AnsibleVars = "dcf_config"
+	PrivKeyPath          AnsibleVars = "private_key"
 )

@@ -65,6 +65,8 @@ type DaemonInfo struct {
 	OnboardingURL   string `json:"onboardingUrl,omitempty"`
 	BinaryPath      string `json:"binaryPath,omitempty"`
 	SystemdUnitPath string `json:"systemdUnitPath,omitempty"`
+	ConfigPath      string `json:"configPath,omitempty"`
+	PrivKeyPath     string `json:"privKeyPath,omitempty"`
 }
 
 func (c *OnboardingServiceConfig) AsString() string {

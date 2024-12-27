@@ -59,7 +59,16 @@ func (c *OnboardingServerClient) RequestChallenge() (challenge string, err error
 
 	c.logger.Write(slog.LevelDebug, fmt.Sprintf("Received response: %+v", res))
 
-	return challenge, nil
+	body, _ := io.ReadAll(res.Body)
+
+	var response responses.GenerateChallenge
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		c.logger.Error("Failed to parse generate challenge response: " + err.Error())
+		return "", err
+	}
+
+	return response.Challenge, nil
 }
 
 func (c *OnboardingServerClient) SendChallengeAnswer(signature string) (passed bool, err error) {
@@ -85,7 +94,7 @@ func (c *OnboardingServerClient) SendChallengeAnswer(signature string) (passed b
 	var response responses.VerifyAnswer
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
-		c.logger.Error("Failed to parse response: " + err.Error())
+		c.logger.Error("Failed to parse verify answer response: " + err.Error())
 		return false, err
 	}
 

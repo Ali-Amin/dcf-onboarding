@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ed25519"
 	"encoding/hex"
-	"errors"
 	"sync"
 
 	"clever.secure-onboard.com/pkg/contracts"
@@ -60,7 +59,7 @@ func (v *ChallengeIdentityVerifier) VerifyAnswer(deviceID, signature string) (bo
 	v.challengeMX.RUnlock()
 
 	if !ok {
-		return false, errors.New("challenge not found for device")
+		return false, nil
 	}
 
 	v.keyMX.RLock()
@@ -68,7 +67,7 @@ func (v *ChallengeIdentityVerifier) VerifyAnswer(deviceID, signature string) (bo
 	v.keyMX.RUnlock()
 
 	if !ok {
-		return false, errors.New("no public key found for device")
+		return false, nil
 	}
 
 	sig, err := hex.DecodeString(signature)

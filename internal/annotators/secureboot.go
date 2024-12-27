@@ -8,43 +8,37 @@ import (
 	"fmt"
 	"os"
 
-	"clever.secure-onboard.com/pkg/contracts"
+	"github.com/foxboron/go-uefi/efivarfs"
 	"github.com/google/uuid"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	sdkContracts "github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 )
 
-type DeviceIdentityAnnotator struct {
+type SecureBootAnnotator struct {
 	sdkCFG config.SdkInfo
 }
 
-func NewDeviceIdentityAnnotator(sdkCFG config.SdkInfo) *DeviceIdentityAnnotator {
-	return &DeviceIdentityAnnotator{sdkCFG: sdkCFG}
+func NewSecureBootAnnotator(sdkCFG config.SdkInfo) interfaces.Annotator {
+	return &SecureBootAnnotator{sdkCFG: sdkCFG}
 }
 
-func (a *DeviceIdentityAnnotator) Do(
-	ctx context.Context,
-	data []byte,
-) (sdkContracts.Annotation, error) {
+func (a *SecureBootAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
 	key := uuid.NewString()
 	hostname, _ := os.Hostname()
-	isSatisfied := false
-	hasTPM := ctx.Value(contracts.HasTPM)
-	if hasTPM != nil {
-		hasTPMValue, ok := hasTPM.(bool)
-		if ok && hasTPMValue {
-			isSatisfied = true
-		}
-	}
-	annotation := sdkContracts.NewAnnotation(
+
+	efifs := efivarfs.NewFS().Open()
+	isSatisfied, _ := efifs.GetSecureBoot()
+
+	annotation := contracts.NewAnnotation(
 		key,
-		a.sdkCFG.Hash.Type,
+		contracts.SHA256Hash,
 		hostname,
-		sdkContracts.Host,
-		"remote-tpm",
+		contracts.Host,
+		"secure-boot",
 		isSatisfied,
 	)
-
 	prv, err := os.ReadFile(a.sdkCFG.Signature.PrivateKey.Path)
 	if err != nil {
 		return sdkContracts.Annotation{}, err

@@ -33,8 +33,8 @@ func Run(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	configuration config.Configuration,
-	handlers []BootstrapHandler) {
-
+	handlers []BootstrapHandler,
+) {
 	wg, _ := initWaitGroup(ctx, cancel, configuration, handlers)
 
 	wg.Wait()
@@ -44,8 +44,8 @@ func initWaitGroup(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	configuration config.Configuration,
-	handlers []BootstrapHandler) (*sync.WaitGroup, bool) {
-
+	handlers []BootstrapHandler,
+) (*sync.WaitGroup, bool) {
 	startedSuccessfully := true
 
 	var wg sync.WaitGroup
@@ -64,7 +64,11 @@ func initWaitGroup(
 
 // translateInterruptToCancel spawns a go routine to translate the receipt of a SIGTERM signal to a call to cancel
 // the context used by the bootstrap implementation.
-func translateInterruptToCancel(ctx context.Context, wg *sync.WaitGroup, cancel context.CancelFunc) {
+func translateInterruptToCancel(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	cancel context.CancelFunc,
+) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -80,6 +84,7 @@ func translateInterruptToCancel(ctx context.Context, wg *sync.WaitGroup, cancel 
 			cancel()
 			return
 		case <-ctx.Done():
+			os.Exit(0)
 			return
 		}
 	}()

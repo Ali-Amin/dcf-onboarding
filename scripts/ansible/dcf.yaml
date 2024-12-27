@@ -5,6 +5,7 @@
   vars:
     agent_binary_path: na
     systemd_unit_path: na
+    dcf_config: "{{ dcf_config }}"
     onboarder_url: "{{ onboarder_url }}"
   tasks:
     - name: "Copy DCF agent binary"
@@ -17,10 +18,29 @@
     - name: "Copy dcfagent systemd file"
       template:
         src: "{{ systemd_unit_path }}"
-        #/root/dev/CLEVER/secure-onboarding/onboarding/dcfagent.service.j2
         dest: /etc/systemd/system/dcfagent.service
         owner: root
         mode: 0644
+
+    - name: "Copy signautre private key"
+      copy:
+        src: "{{ private_key }}"
+        dest: /tmp/private.key
+        mode: 0644
+
+
+    - name: "Copy config file"
+      copy:
+        src: "{{ dcf_config }}"
+        dest: /tmp/config.json
+        mode: 0644
+
+    - name: "Stop DCF Agent daemon if running"
+      systemd:
+        name: dcfagent
+        state: stopped 
+        enabled: True
+        daemon_reload: True
 
     - name: "Start DCF Agent daemon"
       systemd:

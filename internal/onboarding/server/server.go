@@ -48,14 +48,12 @@ func (s *OnboardingServer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) bo
 
 	wg.Add(1)
 	go func() {
-		for {
-			<-ctx.Done()
-			err := server.Close()
-			if err != nil {
-				s.logger.Error(err.Error())
-			}
-			s.logger.Write(slog.LevelInfo, "Shutdown received for onboarding server")
+		<-ctx.Done()
+		err := server.Close()
+		if err != nil {
+			s.logger.Error(err.Error())
 		}
+		s.logger.Write(slog.LevelInfo, "Shutdown received for onboarding server")
 	}()
 
 	return true

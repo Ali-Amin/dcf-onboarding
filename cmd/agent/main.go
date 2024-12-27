@@ -1,28 +1,37 @@
 package main
 
 import (
-	"crypto/ed25519"
-	"encoding/hex"
+	"context"
 	"flag"
-	"fmt"
-	"log/slog"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
+	"clever.secure-onboard.com/internal/agent"
 	"clever.secure-onboard.com/internal/agent/clients"
+	"clever.secure-onboard.com/internal/annotators"
+	"clever.secure-onboard.com/internal/bootstrap"
 	"clever.secure-onboard.com/internal/config"
 	"clever.secure-onboard.com/internal/logging"
+	alvariumcfg "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
+
+	alvariumpkg "github.com/project-alvarium/alvarium-sdk-go/pkg"
 )
 
 func main() {
-	// Load vrrs
+	// Load vars
 	var onboardingServiceURL string
 	flag.StringVar(&onboardingServiceURL,
 		"onboarding-service-url",
-		"./cmd/onboarder/res/config-k8s.json",
+		"http://0.0.0.0:3010",
 		"Location of the onboarding service (e.g., http://180.16.12.5:35000)")
+
+	var alvariumCFGPath string
+	flag.StringVar(&alvariumCFGPath,
+		"cfg",
+		"./cmd/agent/res/config.json",
+		"Path of the alvarium SDK config",
+	)
 	flag.Parse()
 
 	logger := logging.NewDefaultLogger(config.LoggingInfo{MinLogLevel: "debug"})
@@ -35,59 +44,32 @@ func main() {
 	deviceID := strings.Trim(string(id), "\n")
 
 	onboarder := clients.NewOnboardingServerClient(deviceID, onboardingServiceURL, logger)
-	hasTPM := false
-	fi, err := os.Stat("/dev/tpm0")
-	if err == nil {
-		// TPM mounted at default path
-		if fi.Mode()&os.ModeDevice != 0 || fi.Mode()&os.ModeSocket != 0 {
-			hasTPM = true
-		}
-	}
+	tpmClient := clients.NewTPMClient()
 
-	for {
-		status, err := onboarder.SendTPMStatus(hasTPM)
-		if err != nil {
-			logger.Error(err.Error())
-			os.Exit(1)
-		}
+	ready := make(chan bool)
+	identityWorker := agent.NewIdentityClaimWorker(tpmClient, onboarder, ready, logger)
 
-		if status == http.StatusServiceUnavailable {
-			time.Sleep(5 * time.Second)
-			continue
-		}
-
-		break
-	}
-
-	if !hasTPM {
-		logger.Write(slog.LevelInfo, "shutting down dcf agent, no tpm found")
-		os.Exit(0)
-	}
-
-	challenge, err := onboarder.RequestChallenge()
+	var alvariumCFG alvariumcfg.SdkInfo
+	err = config.NewJsonReader().Read(alvariumCFGPath, &alvariumCFG)
 	if err != nil {
-		logger.Error("Failed to get challenge: " + err.Error())
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	// TODO: Use TPM to sign challenge and send signature to onboarding service
+	alvariumSDK := alvariumpkg.NewSdk([]interfaces.Annotator{
+		annotators.NewSecureBootAnnotator(alvariumCFG),
+	}, alvariumCFG, logger)
 
-	privKey := []byte("77868480DA12295006B2EC15097BCCAF1921316A86E3BE8DC2F0D316E8A3D73B")
-	answer := ed25519.Sign(privKey, []byte(challenge))
-	answerHEX := hex.EncodeToString(answer)
+	annotatorWorker := agent.NewAnnotatorWorker(ready, deviceID, alvariumSDK, logger)
 
-	passed, err := onboarder.SendChallengeAnswer(answerHEX)
-	if err != nil {
-		logger.Error("Failed to send challenge answer: " + err.Error())
-		os.Exit(1)
-	}
-
-	logger.Write(slog.LevelInfo, fmt.Sprintf("Passed: %s", passed))
-
-	if !passed {
-		logger.Write(slog.LevelInfo, "shutting down")
-		os.Exit(1)
-	}
-
-	// TODO: Implement annotators for secureboot, os distro, or geolocation
+	ctx, cancel := context.WithCancel(context.Background())
+	bootstrap.Run(
+		ctx,
+		cancel,
+		nil,
+		[]bootstrap.BootstrapHandler{
+			identityWorker.Start,
+			alvariumSDK.BootstrapHandler,
+			annotatorWorker.Start,
+		})
 }
