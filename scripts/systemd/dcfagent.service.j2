@@ -2,7 +2,7 @@
 Description=DCF Agent
 
 [Service]
-ExecStart=/tmp/dcfagent -onboarding-service-url {{ onboarder_url }} -cfg {{ dcf_config }}
+ExecStart=/tmp/dcfagent -onboarding-service-url {{ onboarder_url }} -cfg /tmp/config.json
 
 [Install]
 WantedBy=multi-user.target

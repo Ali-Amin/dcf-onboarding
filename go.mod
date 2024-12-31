@@ -6,7 +6,9 @@ toolchain go1.23.4
 
 require (
 	github.com/apenella/go-ansible/v2 v2.1.0
+	github.com/foxboron/go-uefi v0.0.0-20241219185318-19dc140271bf
 	github.com/go-chi/chi v1.5.5
+	github.com/google/go-tpm v0.9.3
 	github.com/google/uuid v1.6.0
 	github.com/project-alvarium/alvarium-sdk-go v0.0.0-20240926013519-e37d69e165cf
 	k8s.io/api v0.32.0
@@ -30,7 +32,6 @@ require (
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
 	github.com/ethereum/go-ethereum v1.13.10 // indirect
-	github.com/foxboron/go-uefi v0.0.0-20241219185318-19dc140271bf // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect

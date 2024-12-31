@@ -2,8 +2,10 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
+	"clever.secure-onboard.com/pkg/contracts"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 )
 
@@ -15,15 +17,14 @@ type OnboardingServiceConfig struct {
 	Logging          LoggingInfo        `json:"logging,omitempty"`
 }
 
-type NodeDiscovererType string
-
-const (
-	K8s NodeDiscovererType = "k8s"
-)
+type DCFAgentConfig struct {
+	AlvariumSDKInfo config.SdkInfo `json:"alvarium,omitempty"`
+	TPMInfo         TPMInfo        `json:"tpm,omitempty"`
+}
 
 type NodeDiscovererInfo struct {
-	Type   NodeDiscovererType `json:"type,omitempty"`
-	Config interface{}        `json:"config,omitempty"`
+	Type   contracts.NodeDiscovererType `json:"type,omitempty"`
+	Config interface{}                  `json:"config,omitempty"`
 }
 
 // Node discovery info for onboarding
@@ -34,7 +35,7 @@ type K8sNodeDiscoveryConfig struct {
 
 func (d *NodeDiscovererInfo) UnmarshalJSON(data []byte) error {
 	alias := struct {
-		Type NodeDiscovererType `json:"type,omitempty"`
+		Type contracts.NodeDiscovererType `json:"type,omitempty"`
 	}{}
 
 	err := json.Unmarshal(data, &alias)
@@ -43,10 +44,10 @@ func (d *NodeDiscovererInfo) UnmarshalJSON(data []byte) error {
 	}
 
 	switch alias.Type {
-	case K8s:
+	case contracts.K8s:
 		k8sAlias := struct {
-			Type   NodeDiscovererType     `json:"type,omitempty"`
-			Config K8sNodeDiscoveryConfig `json:"config,omitempty"`
+			Type   contracts.NodeDiscovererType `json:"type,omitempty"`
+			Config K8sNodeDiscoveryConfig       `json:"config,omitempty"`
 		}{}
 		err := json.Unmarshal(data, &k8sAlias)
 		if err != nil {
@@ -81,4 +82,64 @@ type ServerInfo struct {
 	Protocol string `json:"protocol,omitempty"`
 	Host     string `json:"host,omitempty"`
 	Port     string `json:"port,omitempty"`
+}
+
+type TPMInfo struct {
+	Type   contracts.TPMType `json:"type,omitempty"`
+	Config interface{}       `json:"config,omitempty"`
+}
+
+type TCPCLIConfig struct {
+	PublicKey string `json:"port,omitempty"`
+}
+
+type TCPTPMConfig struct {
+	Port       string `json:"port,omitempty"`
+	Host       string `json:"host,omitempty"`
+	PrimaryKey string `json:"primary,omitempty"`
+	PublicKey  string `json:"public,omitempty"`
+	PrivateKey string `json:"private,omitempty"`
+}
+
+func (t *TPMInfo) UnmarshalJSON(data []byte) error {
+	alias := &struct {
+		Type contracts.TPMType `json:"type,omitempty"`
+	}{}
+
+	err := json.Unmarshal(data, &alias)
+	if err != nil {
+		return err
+	}
+
+	switch alias.Type {
+	case contracts.CLI:
+		alias := &struct {
+			Type   contracts.TPMType `json:"type,omitempty"`
+			Config TCPCLIConfig      `json:"config,omitempty"`
+		}{}
+
+		err := json.Unmarshal(data, &alias)
+		if err != nil {
+			return err
+		}
+		t.Type = alias.Type
+		t.Config = alias.Config
+		return nil
+	case contracts.TCP:
+		alias := &struct {
+			Type   contracts.TPMType `json:"type,omitempty"`
+			Config TCPTPMConfig      `json:"config,omitempty"`
+		}{}
+
+		err := json.Unmarshal(data, &alias)
+		if err != nil {
+			return err
+		}
+		t.Type = alias.Type
+		t.Config = alias.Config
+		return nil
+	default:
+		return errors.New("unknown tpm provider type: " + string(alias.Type))
+
+	}
 }

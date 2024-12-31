@@ -1,33 +1,41 @@
 {
-  "annotators": [],
-  "hash": {
-    "type": "sha256"
-  },
-  "signature": {
-    "public": {
-      "type": "ed25519",
-      "path": "/tmp/public.key"
-    },
-    "private": {
-      "type": "ed25519",
-      "path": "/tmp/private.key"
-    }
-  },
-  "stream": {
-    "type": "mqtt",
+  "tpm": {
+    "type": "cli",
     "config": {
-      "clientId": "dcf-agent",
-      "qos": 0,
-      "user": "mosquitto",
-      "password": "",
-      "provider": {
-	"host": "0.0.0.0",
-	"protocol": "tcp",
-	"port": 1883
-      },
-      "cleanness": false,
-      "topics": ["alvarium-test-topic"]
+      "public": "key.pub"
     }
   },
-  "layer": "host"
+  "alvarium": {
+    "annotators": [],
+    "hash": {
+      "type": "sha256"
+    },
+    "signature": {
+      "public": {
+	"type": "ed25519",
+	"path": "/tmp/public.key"
+      },
+      "private": {
+	"type": "ed25519",
+	"path": "/tmp/private.key"
+      }
+    },
+    "stream": {
+      "type": "mqtt",
+      "config": {
+	"clientId": "dcf-agent",
+	"qos": 0,
+	"user": "mosquitto",
+	"password": "",
+	"provider": {
+	  "host": "0.0.0.0",
+	  "protocol": "tcp",
+	  "port": 1883
+	},
+	"cleanness": false,
+	"topics": ["alvarium-test-topic"]
+      }
+    },
+    "layer": "host"
+    }
 }

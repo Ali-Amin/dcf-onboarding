@@ -57,9 +57,8 @@ func main() {
 	}
 	identityVerifier := factories.NewDeviceIdentityVerifier(alvariumSDK, logger)
 
-	agent.RemoteInstall(cfg.Daemon, []string{"127.0.0.1"})
 	nodeDiscoverer.OnNewNode(func(node contracts.Node) {
-		// TODO: REMOVE COMMENT		agent.RemoteInstall(cfg.Daemon, []string{node.IP})
+		agent.RemoteInstall(cfg.Daemon, []string{node.IP}, logger)
 		logger.Write(slog.LevelDebug, fmt.Sprintf("Found node: %s", node))
 	})
 
@@ -68,7 +67,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(ctx, cancel, &cfg, []bootstrap.BootstrapHandler{
 		alvariumSDK.BootstrapHandler,
-		// nodeDiscoverer.Bootstrap,
+		nodeDiscoverer.Bootstrap,
 		server.Bootstrap,
 	})
 }

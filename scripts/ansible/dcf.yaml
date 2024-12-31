@@ -1,7 +1,9 @@
 ---
 
-- hosts: 127.0.0.1
+- hosts: all
   gather_facts: false
+  remote_user: ubuntu
+  become: true
   vars:
     agent_binary_path: na
     systemd_unit_path: na
@@ -19,7 +21,7 @@
       template:
         src: "{{ systemd_unit_path }}"
         dest: /etc/systemd/system/dcfagent.service
-        owner: root
+        owner: ubuntu
         mode: 0644
 
     - name: "Copy signautre private key"

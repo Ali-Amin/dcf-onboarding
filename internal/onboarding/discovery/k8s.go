@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 
@@ -58,6 +59,7 @@ func (d *K8sNodeDiscoverer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) b
 
 	for _, node := range nodes.Items {
 		if d.onNewNode != nil {
+			d.logger.Write(slog.LevelInfo, fmt.Sprintf("Discovered node %s", node.Status.Addresses))
 			d.onNewNode(contracts.NewNodeFromK8sNode(node))
 		}
 	}
@@ -79,6 +81,7 @@ func (d *K8sNodeDiscoverer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) b
 			case watch.Added:
 				switch e := event.Object.(type) {
 				case *corev1.Node:
+					d.logger.Write(slog.LevelInfo, fmt.Sprintf("Discovered new node %s", e.Status.Addresses))
 					d.onNewNode(contracts.NewNodeFromK8sNode(*e))
 				}
 			}

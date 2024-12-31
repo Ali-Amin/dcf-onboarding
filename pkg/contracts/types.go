@@ -30,3 +30,20 @@ const (
 	CFGPath              AnsibleVars = "dcf_config"
 	PrivKeyPath          AnsibleVars = "private_key"
 )
+
+type TPMType string
+
+const (
+	TCP TPMType = "tcp"
+	CLI TPMType = "cli"
+)
+
+type TPMConstant string
+
+const NoHandle TPMConstant = "no-handle"
+
+type NodeDiscovererType string
+
+const (
+	K8s NodeDiscovererType = "k8s"
+)

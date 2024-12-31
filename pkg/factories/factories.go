@@ -5,9 +5,11 @@ import (
 	"path"
 	"strings"
 
+	"clever.secure-onboard.com/internal/agent/clients"
 	"clever.secure-onboard.com/internal/config"
 	"clever.secure-onboard.com/internal/onboarding/discovery"
 	"clever.secure-onboard.com/internal/onboarding/verifier"
+	"clever.secure-onboard.com/pkg/contracts"
 	"clever.secure-onboard.com/pkg/interfaces"
 	alvarium "github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 )
@@ -17,7 +19,7 @@ func NewNodeDiscoverer(
 	logger interfaces.Logger,
 ) (interfaces.NodeDiscoverer, error) {
 	switch cfg.Type {
-	case config.K8s:
+	case contracts.K8s:
 		k8sCFG, ok := cfg.Config.(config.K8sNodeDiscoveryConfig)
 		if !ok {
 			return nil, errors.New("bad k8s node discovery config provided")
@@ -33,6 +35,19 @@ func NewDeviceIdentityVerifier(
 	logger interfaces.Logger,
 ) interfaces.DeviceIdentityVerifier {
 	return verifier.NewChallengeIdentityVerifier(alvariumSDK)
+}
+
+func NewTPMClient(cfg config.TPMInfo, logger interfaces.Logger) (interfaces.TPMClient, error) {
+	switch cfg.Type {
+	case contracts.CLI:
+		tpmCFG, ok := cfg.Config.(config.TCPCLIConfig)
+		if !ok {
+			return nil, errors.New("bad tpm cli config provided")
+		}
+		return clients.NewTPMCLIClient(tpmCFG, logger), nil
+	default:
+		return nil, errors.New("unimplemented tpm type: " + string(cfg.Type))
+	}
 }
 
 // NewReader returns a type that will hydrate an ApplicationConfig instance from a file.

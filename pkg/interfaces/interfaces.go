@@ -22,6 +22,11 @@ type DeviceIdentityVerifier interface {
 
 type Onboarder interface{}
 
+type TPMClient interface {
+	HasTPM() (bool, error)
+	Sign(data string) (string, error)
+}
+
 type Logger interface {
 	// Write facilitates creation and writing of a LogEntry of a specified LogLevel. The client application
 	// can also supply a message and a flexible list of additional arguments. These additional arguments are

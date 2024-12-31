@@ -1,13 +1,10 @@
 package agent
 
 import (
-	"context"
-	"crypto/ed25519"
-	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"sync"
+	"os"
 	"time"
 
 	"clever.secure-onboard.com/internal/agent/clients"
@@ -15,7 +12,7 @@ import (
 )
 
 type IdentityClaimWorker struct {
-	tpmClient        *clients.TPMClient
+	tpmClient        interfaces.TPMClient
 	onboardingClient *clients.OnboardingServerClient
 	ready            chan bool
 
@@ -23,7 +20,7 @@ type IdentityClaimWorker struct {
 }
 
 func NewIdentityClaimWorker(
-	tpmClient *clients.TPMClient,
+	tpmClient interfaces.TPMClient,
 	onboardingClient *clients.OnboardingServerClient,
 	ready chan bool,
 	logger interfaces.Logger,
@@ -36,23 +33,19 @@ func NewIdentityClaimWorker(
 	}
 }
 
-func (w *IdentityClaimWorker) Start(ctx context.Context, wg *sync.WaitGroup) bool {
-	hasTPM := w.tpmClient.HasTPM()
+func (w *IdentityClaimWorker) Start() bool {
+	hasTPM, _ := w.tpmClient.HasTPM()
 	if !hasTPM {
 		w.logger.Error("No TPM found, shutting down...")
 		return false
 	}
-	w.trySendTPMStatus(ctx, wg, hasTPM)
-	w.sendIdentityClaim(ctx, wg)
+	w.trySendTPMStatus(hasTPM)
+	w.sendIdentityClaim()
 
 	return true
 }
 
-func (w *IdentityClaimWorker) trySendTPMStatus(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	hasTPM bool,
-) (success chan bool) {
+func (w *IdentityClaimWorker) trySendTPMStatus(hasTPM bool) {
 	exponentialBackoff := 1
 	for {
 		status, err := w.onboardingClient.SendTPMStatus(hasTPM)
@@ -69,10 +62,9 @@ func (w *IdentityClaimWorker) trySendTPMStatus(
 		}
 		break
 	}
-	return nil
 }
 
-func (w *IdentityClaimWorker) sendIdentityClaim(ctx context.Context, wg *sync.WaitGroup) {
+func (w *IdentityClaimWorker) sendIdentityClaim() {
 	// Repeat challenge verification on exponential back off
 	// until it passes to allow for retroactive upload of device
 	// public key to onboarding service
@@ -94,19 +86,14 @@ func (w *IdentityClaimWorker) sendIdentityClaim(ctx context.Context, wg *sync.Wa
 			continue
 		}
 
-		// TODO: Use TPM to sign challenge and send signature to onboarding service
-
-		privKeyHEX := "77868480DA12295006B2EC15097BCCAF1921316A86E3BE8DC2F0D316E8A3D73B935EA49AF695C3339512F1A814EDBD3BE98651BD2BB521AD4DD75BDB39DD5CA0"
-		privKey, err := hex.DecodeString(privKeyHEX)
+		// If signature failed, something is wrong with TPM and service should be manually looked at again
+		signature, err := w.tpmClient.Sign(challenge)
 		if err != nil {
-			w.logger.Error("failed to decode private key hex", err.Error())
-			return
+			w.logger.Error("failed to sign challenge: " + err.Error())
+			os.Exit(1)
 		}
 
-		answer := ed25519.Sign(privKey, []byte(challenge))
-		answerHEX := hex.EncodeToString(answer)
-
-		passed, err = w.onboardingClient.SendChallengeAnswer(answerHEX)
+		passed, err = w.onboardingClient.SendChallengeAnswer(signature)
 		if err != nil {
 			w.logger.Error("Failed to send challenge answer: " + err.Error())
 			backoff()
@@ -117,8 +104,8 @@ func (w *IdentityClaimWorker) sendIdentityClaim(ctx context.Context, wg *sync.Wa
 		if !passed {
 			backoff()
 			exponentialBackoff = 5
-		} else {
-			return
+			continue
 		}
+		passed = true
 	}
 }

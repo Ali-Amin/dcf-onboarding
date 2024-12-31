@@ -2,8 +2,13 @@ package verifier
 
 import (
 	"context"
-	"crypto/ed25519"
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
 	"encoding/hex"
+	"encoding/pem"
+	"errors"
 	"sync"
 
 	"clever.secure-onboard.com/pkg/contracts"
@@ -62,8 +67,10 @@ func (v *ChallengeIdentityVerifier) VerifyAnswer(deviceID, signature string) (bo
 		return false, nil
 	}
 
+	challengeDigest := sha256.Sum256([]byte(challenge))
+
 	v.keyMX.RLock()
-	pubKey, ok := v.inMemKeyStore[deviceID]
+	pubKeyPEM, ok := v.inMemKeyStore[deviceID]
 	v.keyMX.RUnlock()
 
 	if !ok {
@@ -75,11 +82,20 @@ func (v *ChallengeIdentityVerifier) VerifyAnswer(deviceID, signature string) (bo
 		return false, err
 	}
 
-	passed := ed25519.Verify(pubKey, []byte(challenge), sig)
-	if !passed {
+	block, _ := pem.Decode(pubKeyPEM)
+	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return false, errors.New("bad rsa public key provided: " + err.Error())
+	}
+	rsaPub, ok := pubKey.(*rsa.PublicKey)
+	if !ok {
+		return false, errors.New("bad rsa public key provided")
+	}
+	err = rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, challengeDigest[:], sig)
+	if err != nil {
 		ctx := context.WithValue(context.Background(), contracts.HasTPM, false)
 		v.alvariumSDK.Create(ctx, []byte(deviceID))
-		return false, nil
+		return false, err
 	}
 
 	ctx := context.WithValue(context.Background(), contracts.HasTPM, true)
