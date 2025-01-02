@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
@@ -41,11 +42,15 @@ func NewChallengeIdentityVerifier(alvariumSDK alvarium.Sdk) *ChallengeIdentityVe
 func (v *ChallengeIdentityVerifier) ReceivePublicKey(deviceID string, key string) error {
 	v.keyMX.Lock()
 	defer v.keyMX.Unlock()
-	pubKey, err := hex.DecodeString(key)
+	pubKeyPEM, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
-		return err
+		return errors.New("public key is not base64 encoded")
 	}
-	v.inMemKeyStore[deviceID] = pubKey
+	block, _ := pem.Decode(pubKeyPEM)
+	if block == nil {
+		return errors.New("Public key is not in PEM format")
+	}
+	v.inMemKeyStore[deviceID] = block.Bytes
 	return nil
 }
 
@@ -82,8 +87,7 @@ func (v *ChallengeIdentityVerifier) VerifyAnswer(deviceID, signature string) (bo
 		return false, err
 	}
 
-	block, _ := pem.Decode(pubKeyPEM)
-	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	pubKey, err := x509.ParsePKIXPublicKey(pubKeyPEM)
 	if err != nil {
 		return false, errors.New("bad rsa public key provided: " + err.Error())
 	}

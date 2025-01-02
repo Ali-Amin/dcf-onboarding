@@ -12,9 +12,8 @@ import (
 	"clever.secure-onboard.com/pkg/contracts"
 	"clever.secure-onboard.com/pkg/interfaces"
 	"github.com/apenella/go-ansible/v2/pkg/execute"
-	"github.com/apenella/go-ansible/v2/pkg/execute/measure"
 	results "github.com/apenella/go-ansible/v2/pkg/execute/result/json"
-	"github.com/apenella/go-ansible/v2/pkg/execute/stdoutcallback"
+	"github.com/apenella/go-ansible/v2/pkg/execute/result/transformer"
 	"github.com/apenella/go-ansible/v2/pkg/playbook"
 )
 
@@ -37,6 +36,8 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 		Inventory:    inventory.String(),
 		ExtraVars: map[string]interface{}{
 			"ansible_sudo_pass":                    "ubuntu",
+			"ansible_ssh_pass":                     "ubuntu",
+			"host_key_checking":                    false,
 			string(contracts.AgentPath):            cfg.BinaryPath,
 			string(contracts.AgentSystemdUnitPath): cfg.SystemdUnitPath,
 			string(contracts.OnboarderURL):         cfg.OnboardingURL,
@@ -54,13 +55,10 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 	logger.Write(slog.LevelInfo, fmt.Sprintf("Running command on hosts: %s", cmd))
 
 	buff := new(bytes.Buffer)
-	exec := measure.NewExecutorTimeMeasurement(
-		stdoutcallback.NewJSONStdoutCallbackExecute(
-			execute.NewDefaultExecute(
-				execute.WithCmd(playbookCMD),
-				execute.WithErrorEnrich(playbook.NewAnsiblePlaybookErrorEnrich()),
-				execute.WithWrite(io.Writer(buff)),
-			),
+	exec := execute.NewDefaultExecute(
+		execute.WithCmd(playbookCMD),
+		execute.WithTransformers(
+			transformer.LogFormat(transformer.DefaultLogFormatLayout, transformer.Now),
 		),
 	)
 
@@ -75,7 +73,6 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 		panic(err)
 	}
 
-	fmt.Println(res.String())
-	fmt.Println("Duration: ", exec.Duration().String())
+	logger.Write(slog.LevelDebug, res.String())
 	return nil
 }

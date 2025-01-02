@@ -27,7 +27,7 @@ func (c *TPMCLIClient) Sign(data string) (string, error) {
 	flushCMD := "tpm2_flushcontext"
 	result := exec.Command(flushCMD, "-t")
 
-	stdout, err := result.Output()
+	stdout, err := result.CombinedOutput()
 	if err != nil {
 		c.logger.Error(
 			fmt.Sprintf(
@@ -62,7 +62,7 @@ func (c *TPMCLIClient) Sign(data string) (string, error) {
 		digestOutPath,
 	)
 	c.logger.Write(slog.LevelDebug, "Running command: "+result.String())
-	stdout, err = result.Output()
+	stdout, err = result.CombinedOutput()
 	if err != nil {
 		c.logger.Error(
 			fmt.Sprintf(

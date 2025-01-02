@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onboarder
+spec:
+  tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+  nodeSelector:
+    kubernetes.io/hostname: clever-shradda-mast01
+  containers:
+  - name: onboarding-service
+    image: alimamin/onboarding-service:0.2.0
+    command: ["onboarder", "-cfg", "/app/cmd/res/config.json"]
+    ports:
+    - containerPort: 3010
+      hostIP: 10.18.1.30
+      hostPort: 30010
+    env:
+    - name: ANSIBLE_HOST_KEY_CHECKING
+      value: "False"
+    volumeMounts:
+    - name: onboarder-config
+      mountPath: "/app/cmd/res/config.json"
+      subPath: config.json
+      readOnly: true
+    - name: agent-config
+      mountPath: "/app/agent-config.json"
+      subPath: agent-config.json
+      readOnly: true
+    - name: keys
+      mountPath: "/app/cmd/agent/res/keys/ed25519/"
+      readOnly: true
+    - name: hedera-key
+      mountPath: "/app/cmd/res/keys/hedera/"
+      readOnly: true
+    - name: kubeconfig
+      mountPath: "/app/kubeconfig"
+      readOnly: true
+  serviceAccountName: onboarder
+  volumes:
+    - name: onboarder-config
+      configMap:
+        name: onboarder-config
+        items:
+          - key: "onboarder-config.json"
+            path: "config.json"
+    - name: agent-config
+      configMap:
+        name: onboarder-config 
+        items:
+          - key: "agent-config.json"
+            path: "agent-config.json"
+    - name: keys
+      secret:
+        secretName: private-public-key
+        items:
+          - key: "private.key"
+            path: "private.key"
+          - key: "public.key"
+            path: "public.key"
+    - name: hedera-key
+      secret:
+        secretName: hedera-private-key
+        items:
+          - key: "private.key"
+            path: "private.key"
+    - name: kubeconfig
+      hostPath:
+        path: /home/ubuntu/.kube/config

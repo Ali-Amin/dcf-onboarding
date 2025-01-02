@@ -6,4 +6,4 @@ build:
 
 
 run:
-	./cmd/onboarder/onboarder -cfg ./cmd/onboarder/res/config-k8s.json
+	./cmd/onboarder/onboarder -cfg ./cmd/onboarder/res/config.json

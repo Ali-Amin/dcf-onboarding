@@ -90,7 +90,7 @@ type TPMInfo struct {
 }
 
 type TCPCLIConfig struct {
-	PublicKey string `json:"port,omitempty"`
+	PublicKey string `json:"public,omitempty"`
 }
 
 type TCPTPMConfig struct {

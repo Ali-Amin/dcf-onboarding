@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: onboarder-config
+data:
+  agent-config.json: |
+    {
+    "tpm": {
+      "type": "cli",
+      "config": {
+        "public": "/root/tpm/key.ctx"
+      }
+    },
+    "alvarium": {
+      "annotators": [],
+      "hash": {
+        "type": "sha256"
+      },
+      "signature": {
+        "public": {
+          "type": "ed25519",
+          "path": "/app/cmd/onboarder/res/public.key"
+        },
+        "private": {
+          "type": "ed25519",
+          "path": "/app/cmd/onboarder/res/private.key"
+        }
+      },
+      "stream": {
+        "type": "mqtt",
+        "config": {
+          "clientId": "dcf-agent",
+          "qos": 0,
+          "user": "mosquitto",
+          "password": "",
+          "provider": {
+            "host": "mosquitto.ali",
+            "protocol": "tcp",
+            "port": 1883
+          },
+          "cleanness": false,
+          "topics": ["alvarium-test-topic"]
+        }
+      },
+      "layer": "host"
+      }
+    }
+  onboarder-config.json: |
+    {
+      "discovery": {
+        "type": "k8s",
+        "config": {
+          "inCluster": false,
+          "kubeconfigPath": "/app/kubeconfig"
+        }
+      },
+      "daemon": {
+        "playbook": "/app/scripts/ansible/dcf.yaml",
+        "binaryPath": "/app/cmd/agent/dcfagent",
+        "systemdUnitPath": "/app/scripts/systemd/dcfagent.service.j2",
+        "onboardingUrl": "http://10.18.1.30:30010",
+        "configPath": "/app/agent-config.json",
+        "privKeyPath": "/app/cmd/agent/res/private.key"
+      },
+      "server" : {
+        "protocol": "http",
+        "port":"3010",
+        "host":"0.0.0.0"
+      },
+      "sdk": {
+        "annotators": [],
+        "hash": {
+          "type": "sha256"
+        },
+        "signature": {
+          "public": {
+            "type": "ed25519",
+            "path": "/app/cmd/onboarder/res/keys/public.key"
+          },
+          "private": {
+            "type": "ed25519",
+            "path": "/app/cmd/onboarder/res/private.key"
+          }
+        },
+        "stream": {
+          "type": "mqtt",
+          "config": {
+            "clientId": "onboarding-service",
+            "qos": 0,
+            "user": "mosquitto",
+            "password": "",
+            "provider": {
+              "host": "mosquitto.ali",
+              "protocol": "tcp",
+              "port": 1883
+            },
+            "cleanness": false,
+            "topics": ["alvarium-test-topic"]
+          }
+        },
+        "layer": "host"
+      },
+      "logging": {
+        "minLogLevel": "debug"
+      }
+    }

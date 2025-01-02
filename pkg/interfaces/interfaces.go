@@ -14,9 +14,9 @@ type NodeDiscoverer interface {
 }
 
 type DeviceIdentityVerifier interface {
-	ReceivePublicKey(deviceID, pubKey string) error
+	ReceivePublicKey(deviceID string, pubKey string) error
 	GenerateChallenge(deviceID string) (challengeToken string, err error)
-	VerifyAnswer(deviceID, signature string) (verified bool, err error)
+	VerifyAnswer(deviceID string, signature string) (verified bool, err error)
 	HandleTPMStatus(deviceID string, hasTPM bool) error
 }
 

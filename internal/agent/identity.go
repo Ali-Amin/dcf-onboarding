@@ -52,11 +52,14 @@ func (w *IdentityClaimWorker) trySendTPMStatus(hasTPM bool) {
 		if err != nil || status == http.StatusServiceUnavailable {
 			w.logger.Error(
 				fmt.Sprintf(
-					"Retrying to reach onboarding service in %s seconds",
+					"Retrying to reach onboarding service in %d seconds",
 					exponentialBackoff,
 				),
 			)
-			exponentialBackoff *= 2
+			// ceiling is one hour
+			if exponentialBackoff < 1*60*60 {
+				exponentialBackoff *= 2
+			}
 			time.Sleep(time.Duration(exponentialBackoff) * time.Second)
 			continue
 		}
@@ -103,7 +106,11 @@ func (w *IdentityClaimWorker) sendIdentityClaim() {
 		w.logger.Write(slog.LevelInfo, fmt.Sprintf("Passed: %t", passed))
 		if !passed {
 			backoff()
-			exponentialBackoff = 5
+
+			// ceiling is one hour
+			if exponentialBackoff < 1*60*60 {
+				exponentialBackoff *= 2
+			}
 			continue
 		}
 		passed = true

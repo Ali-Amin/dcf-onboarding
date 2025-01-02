@@ -2,7 +2,7 @@
   "tpm": {
     "type": "cli",
     "config": {
-      "public": "key.pub"
+      "public": "/tmp/key.ctx"
     }
   },
   "alvarium": {
