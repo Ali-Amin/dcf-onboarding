@@ -30,13 +30,13 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 	)
 
 	ansiblePlaybookOptions := &playbook.AnsiblePlaybookOptions{
-		User:         "ubunu",
+		User:         "dcf",
 		BecomeUser:   "root",
 		BecomeMethod: "sudo",
 		Inventory:    inventory.String(),
 		ExtraVars: map[string]interface{}{
-			"ansible_sudo_pass":                    "ubuntu",
-			"ansible_ssh_pass":                     "ubuntu",
+			"ansible_sudo_pass":                    "password",
+			"ansible_ssh_pass":                     "password",
 			"host_key_checking":                    false,
 			string(contracts.AgentPath):            cfg.BinaryPath,
 			string(contracts.AgentSystemdUnitPath): cfg.SystemdUnitPath,
