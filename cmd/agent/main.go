@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"os"
-	"strings"
 	"sync"
 
 	"clever.secure-onboard.com/internal/agent"
@@ -35,17 +34,23 @@ func main() {
 
 	logger := logging.NewDefaultLogger(config.LoggingInfo{MinLogLevel: "debug"})
 
-	id, err := os.ReadFile("/etc/machine-id")
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-	deviceID := strings.Trim(string(id), "\n")
+	// This would give the same machine ID for VMs running on the same host
+	// which would work in theory since we are measuring confidence in the host itself,
+	// but in practice we would be duplicating annotations which would sway confidence
+	// scores one way or the other
+	//	id, err := os.ReadFile("/etc/machine-id")
+	//	if err != nil {
+	//		logger.Error(err.Error())
+	//		os.Exit(1)
+	//	}
+	// deviceID := strings.Trim(string(id), "\n")
+
+	deviceID, _ := os.Hostname()
 
 	onboarder := clients.NewOnboardingServerClient(deviceID, onboardingServiceURL, logger)
 
 	var agentCFG config.DCFAgentConfig
-	err = config.NewJsonReader().Read(cfg, &agentCFG)
+	err := config.NewJsonReader().Read(cfg, &agentCFG)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
@@ -84,6 +89,11 @@ func main() {
 	go func() {
 		defer wg.Done()
 		identityWorker.Start()
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		annotatorWorker.Start()
 	}()
 

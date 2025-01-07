@@ -17,16 +17,19 @@ type Router struct {
 	Mux              *chi.Mux
 	logger           interfaces.Logger
 	deviceIdentifier interfaces.DeviceIdentityVerifier
+	auth             interfaces.Authenticator
 }
 
 func newRouter(
 	identityVerifier interfaces.DeviceIdentityVerifier,
+	auth interfaces.Authenticator,
 	logger interfaces.Logger,
 ) *chi.Mux {
 	r := &Router{
 		Mux:              chi.NewRouter(),
 		logger:           logger,
 		deviceIdentifier: identityVerifier,
+		auth:             auth,
 	}
 
 	r.Mux.Post("/device/{deviceID}/key", r.storeDevicePublicKey)
@@ -40,6 +43,19 @@ func newRouter(
 }
 
 func (r *Router) storeDevicePublicKey(w http.ResponseWriter, req *http.Request) {
+	// Auth
+	username, password, ok := req.BasicAuth()
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	authenticated := r.auth.Authenticate(username, password)
+	if !authenticated {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	deviceID := chi.URLParam(req, "deviceID")
 	r.logger.Write(slog.LevelDebug, "received request to store public key for device "+deviceID)
 

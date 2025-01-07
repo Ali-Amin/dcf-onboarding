@@ -1,0 +1,205 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriber
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: subscriber
+  template:
+    metadata:
+      labels:
+        app: subscriber
+    spec:
+      containers:
+      - name: subscriber
+        image: alimamin/dcf-subscriber:1.1.0
+        command: ["/subscriber-go", "-cfg=/app/cmd/subscriber/res/config.json"]
+        volumeMounts:
+        - name: subscriber-config
+          mountPath: "/app/cmd/subscriber/res/config.json"
+          subPath: config.json
+          readOnly: true
+        - name: keys
+          mountPath: "/app/cmd/agent/res/keys/ed25519/"
+          readOnly: true
+        - name: hedera-key
+          mountPath: "/app/cmd/res/keys/hedera/"
+          readOnly: true
+      volumes:
+        - name: subscriber-config
+          configMap:
+            name: dcf-config
+            items:
+              - key: "subscriber-config.json"
+                path: "config.json"
+        - name: keys
+          secret:
+            secretName: private-public-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+              - key: "public.key"
+                path: "public.key"
+        - name: hedera-key
+          secret:
+            secretName: hedera-private-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculator
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: calculator
+  template:
+    metadata:
+      labels:
+        app: calculator
+    spec:
+      containers:
+      - name: calculator
+        image: alimamin/dcf-calculator
+        command: ["/calculator-go", "-cfg=/app/cmd/calculator/res/config.json"]
+        volumeMounts:
+        - name: calculator-config
+          mountPath: "/app/cmd/calculator/res/config.json"
+          subPath: config.json
+          readOnly: true
+        - name: keys
+          mountPath: "/app/cmd/agent/res/keys/ed25519/"
+          readOnly: true
+        - name: hedera-key
+          mountPath: "/app/cmd/res/keys/hedera/"
+          readOnly: true
+      volumes:
+        - name: calculator-config
+          configMap:
+            name: dcf-config
+            items:
+              - key: "calculator-config.json"
+                path: "config.json"
+        - name: keys
+          secret:
+            secretName: private-public-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+              - key: "public.key"
+                path: "public.key"
+        - name: hedera-key
+          secret:
+            secretName: hedera-private-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: populator
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: populator
+  template:
+    metadata:
+      labels:
+        app: populator
+    spec:
+      containers:
+      - name: populator
+        image: alimamin/dcf-populator
+        command: ["/populator-go", "-cfg=/app/cmd/populator/res/config.json"]
+        volumeMounts:
+        - name: populator-config
+          mountPath: "/app/cmd/populator/res/config.json"
+          subPath: config.json
+          readOnly: true
+        - name: keys
+          mountPath: "/app/cmd/agent/res/keys/ed25519/"
+          readOnly: true
+        - name: hedera-key
+          mountPath: "/app/cmd/res/keys/hedera/"
+          readOnly: true
+      volumes:
+        - name: populator-config
+          configMap:
+            name: dcf-config
+            items:
+              - key: "populator-config.json"
+                path: "config.json"
+        - name: keys
+          secret:
+            secretName: private-public-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+              - key: "public.key"
+                path: "public.key"
+        - name: hedera-key
+          secret:
+            secretName: hedera-private-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: populator-api
+spec:
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: populator-api
+  template:
+    metadata:
+      labels:
+        app: populator-api
+    spec:
+      containers:
+      - name: populator-api
+        image: alimamin/populator-api-go:secure-onboarding-v1.1
+        command: ["/populator-api-go", "-cfg=/app/cmd/populator-api/res/config.json"]
+        ports:
+        - containerPort: 8085
+        volumeMounts:
+        - name: populator-api-config
+          mountPath: "/app/cmd/populator-api/res/config.json"
+          subPath: config.json
+          readOnly: true
+        - name: keys
+          mountPath: "/app/cmd/agent/res/keys/ed25519/"
+          readOnly: true
+        - name: hedera-key
+          mountPath: "/app/cmd/res/keys/hedera/"
+          readOnly: true
+      volumes:
+        - name: populator-api-config
+          configMap:
+            name: dcf-config
+            items:
+              - key: "populator-api-config.json"
+                path: "config.json"
+        - name: keys
+          secret:
+            secretName: private-public-key
+            items:
+              - key: "private.key"
+                path: "private.key"
+              - key: "public.key"
+                path: "public.key"
+        - name: hedera-key
+          secret:
+            secretName: hedera-private-key
+            items:
+              - key: "private.key"
+                path: "private.key"

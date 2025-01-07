@@ -24,7 +24,7 @@
         owner: ubuntu
         mode: 0644
 
-    - name: "Copy signautre private key"
+    - name: "Copy DCF signautre private key"
       copy:
         src: "{{ private_key }}"
         dest: /tmp/private.key

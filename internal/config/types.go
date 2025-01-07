@@ -79,9 +79,14 @@ type LoggingInfo struct {
 }
 
 type ServerInfo struct {
-	Protocol string `json:"protocol,omitempty"`
-	Host     string `json:"host,omitempty"`
-	Port     string `json:"port,omitempty"`
+	Protocol string   `json:"protocol,omitempty"`
+	Host     string   `json:"host,omitempty"`
+	Port     string   `json:"port,omitempty"`
+	Auth     AuthInfo `json:"auth,omitempty"`
+}
+
+type AuthInfo struct {
+	Type contracts.AuthenticatorType `json:"type,omitempty"`
 }
 
 type TPMInfo struct {

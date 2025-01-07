@@ -23,7 +23,7 @@ data:
         },
         "private": {
           "type": "ed25519",
-          "path": "/app/cmd/onboarder/res/private.key"
+          "path": "/tmp/private.key"
         }
       },
       "stream": {
@@ -34,9 +34,9 @@ data:
           "user": "mosquitto",
           "password": "",
           "provider": {
-            "host": "mosquitto.ali",
+            "host": "10.18.1.33",
             "protocol": "tcp",
-            "port": 1883
+            "port": 35010
           },
           "cleanness": false,
           "topics": ["alvarium-test-topic"]
@@ -90,7 +90,7 @@ data:
             "user": "mosquitto",
             "password": "",
             "provider": {
-              "host": "mosquitto.ali",
+              "host": "mosquitto.ali.svc.cluster.local",
               "protocol": "tcp",
               "port": 1883
             },

@@ -1,0 +1,249 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dcf-config
+data:
+  subscriber-config.json: |
+      {
+        "sdk" : {
+          "stream": {
+            "type": "mqtt",
+            "config": {
+              "clientId": "alvarium-subscriber",
+              "qos": 0,
+              "user": "mosquitto",
+              "password": "",
+              "provider": {
+                "host": "mosquitto.ali.svc.cluster.local",
+                "protocol": "tcp",
+                "port": 1883
+              },
+              "cleanness": false,
+              "topics": ["alvarium-test-topic"]
+            }
+          }
+        },
+        "stream": {
+          "publisher": {
+            "type": "mqtt",
+            "config": {
+              "clientId": "subcsriber-go-publisher",
+              "qos": 0,
+              "user": "mosquitto",
+              "password": "",
+              "provider": {
+                "host": "mosquitto.ali.svc.cluster.local",
+                "protocol": "tcp",
+                "port": 1883
+              },
+              "cleanness": false,
+              "topics": ["alvarium-calculator"]
+            }
+          }
+        },
+        "database": {
+          "type": "arango",
+          "config": {
+            "databaseName": "alvarium",
+            "edges": [
+              {
+                "collectionName": "lineage",
+                "from": ["data"],
+                "to": ["data"]
+              },
+              {
+                "collectionName": "trust",
+                "from": ["data"],
+                "to": ["annotations"]
+              },
+              {
+                "collectionName": "scoring",
+                "from": ["scores"],
+                "to": ["data"]
+              },
+              {
+                "collectionName": "stack",
+                "from": ["scores"],
+                "to": ["scores"]
+              }
+            ],
+            "graphName": "example-graph",
+            "provider": {
+              "host": "arango.ali.svc.cluster.local",
+              "protocol": "http",
+              "port": 8529
+            },
+            "vertexes": ["annotations","data","scores"]
+          }
+        },
+        "logging": {
+          "minLogLevel": "debug"
+        }
+      }
+  calculator-config.json: |
+    {
+      "stream": {
+        "subscriber": {
+          "type": "mqtt",
+          "config": {
+            "clientId": "alvarium-calculator",
+            "qos": 0,
+            "user": "mosquitto",
+            "password": "",
+            "provider": {
+              "host": "mosquitto.ali.svc.cluster.local",
+              "protocol": "tcp",
+              "port": 1883
+            },
+            "cleanness": false,
+            "topics": ["alvarium-calculator"]
+          }
+        }
+      },
+      "database": {
+        "type": "arango",
+        "config": {
+          "databaseName": "alvarium",
+          "edges": [
+            {
+              "collectionName": "scoring",
+              "from": ["scores"],
+              "to": ["data"]
+            },
+            {
+              "collectionName": "stack",
+              "from": ["scores"],
+              "to": ["scores"]
+            }
+          ],
+          "graphName": "example-graph",
+          "provider": {
+            "host": "arango.ali.svc.cluster.local",
+            "protocol": "http",
+            "port": 8529
+          },
+          "vertexes": ["scores"]
+        }
+      },
+      "policy": {
+        "type": "local",
+        "config": {
+          "weights": [
+            {
+              "classifier": "production",
+              "items": [
+                {
+                  "key": "pki",
+                  "value": 2
+                },
+                {
+                  "key": "tls",
+                  "value": 2
+                },
+                {
+                  "key": "tpm",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "classifier": "default",
+              "items": [
+                {
+                  "key": "pki",
+                  "value": 1
+                },
+                {
+                  "key": "tls",
+                  "value": 1
+                },
+                {
+                  "key": "tpm",
+                  "value": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "logging": {
+        "minLogLevel": "debug"
+      }
+    }
+
+  populator-config.json: |
+    {
+      "databases": [
+        {
+          "type": "arango",
+          "config": {
+            "databaseName": "alvarium",
+            "graphName": "example-graph",
+            "provider": {
+              "host": "arango.ali.svc.cluster.local",
+              "protocol": "http",
+              "port": 8529
+            },
+            "vertex": "scores"
+          }
+        },
+        {
+          "type": "mongo",
+          "config": {
+            "host": "mongo.ali.svc.cluster.local",
+            "port": 27017,
+            "username": "dbAdmin",
+            "password": "password",
+            "collection": "sampleData",
+            "dbName": "AlvariumDB"
+          }
+        }
+      ],
+      "hash": {
+        "type": "sha256"
+      },
+      "logging": {
+        "minLogLevel": "debug"
+      }
+    }
+
+  populator-api-config.json: |
+    {
+      "databases": [
+        {
+          "type": "arango",
+          "config": {
+            "databaseName": "alvarium",
+            "graphName": "example-graph",
+            "provider": {
+              "host": "arango.ali.svc.cluster.local",
+              "protocol": "http",
+              "port": 8529
+            },
+            "vertex": "scores"
+          }
+        },
+        {
+          "type": "mongo",
+          "config": {
+            "host": "mongo.ali.svc.cluster.local",
+            "port": 27017,
+            "username": "dbAdmin",
+            "password": "password",
+            "collection": "sampleData",
+            "dbName": "AlvariumDB"
+          }
+        }
+      ],
+      "endpoint": {
+        "host": "mongo.ali.svc.cluster.local",
+        "port": 8085,
+        "protocol": "http"
+      },
+      "hash": {
+        "type": "sha256"
+      },
+      "logging": {
+        "minLogLevel": "debug"
+      }
+    }

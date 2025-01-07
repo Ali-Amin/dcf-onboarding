@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: arango
+  labels:
+    app: arango
+spec:
+  serviceName: "arango"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arango
+  template:
+    metadata:
+      labels:
+        app: arango
+    spec:
+      containers:
+      - name: arango
+        image: arangodb:3.8
+        ports:
+        - containerPort: 8529
+        env:
+          - name: ARANGO_NO_AUTH
+            value: "1"

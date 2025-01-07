@@ -13,6 +13,7 @@ import (
 
 type OnboardingServer struct {
 	cfg              config.ServerInfo
+	auth             interfaces.Authenticator
 	logger           interfaces.Logger
 	identityVerifier interfaces.DeviceIdentityVerifier
 }
@@ -20,19 +21,21 @@ type OnboardingServer struct {
 func NewOnboardingServer(
 	cfg config.ServerInfo,
 	identityVerifier interfaces.DeviceIdentityVerifier,
+	auth interfaces.Authenticator,
 	logger interfaces.Logger,
 ) *OnboardingServer {
 	return &OnboardingServer{
 		cfg:              cfg,
-		logger:           logger,
+		auth:             auth,
 		identityVerifier: identityVerifier,
+		logger:           logger,
 	}
 }
 
 func (s *OnboardingServer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) bool {
 	addr := fmt.Sprintf("%s:%s", s.cfg.Host, s.cfg.Port)
 	s.logger.Write(slog.LevelInfo, "onboarding server running on "+addr)
-	r := newRouter(s.identityVerifier, s.logger)
+	r := newRouter(s.identityVerifier, s.auth, s.logger)
 	server := &http.Server{
 		Addr:    addr,
 		Handler: r,

@@ -45,3 +45,7 @@ type Logger interface {
 type Reader interface {
 	Read(filePath string, cfg any) error
 }
+
+type Authenticator interface {
+	Authenticate(username, password string) bool
+}

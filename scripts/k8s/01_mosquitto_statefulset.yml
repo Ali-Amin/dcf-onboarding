@@ -20,6 +20,7 @@ spec:
         image: eclipse-mosquitto:latest
         ports:
         - containerPort: 1883
+          hostPort: 35010
         volumeMounts:
         - name: mosquitto-config
           mountPath: /mosquitto/config/mosquitto.conf

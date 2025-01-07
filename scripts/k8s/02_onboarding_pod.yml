@@ -11,8 +11,8 @@ spec:
     kubernetes.io/hostname: clever-shradda-mast01
   containers:
   - name: onboarding-service
-    image: alimamin/onboarding-service:0.2.0
-    command: ["onboarder", "-cfg", "/app/cmd/res/config.json"]
+    image: alimamin/onboarding-service:1.1.4
+    command: ["onboarder", "-cfg", "/app/cmd/onboarding/res/config.json"]
     ports:
     - containerPort: 3010
       hostIP: 10.18.1.30
@@ -22,7 +22,7 @@ spec:
       value: "False"
     volumeMounts:
     - name: onboarder-config
-      mountPath: "/app/cmd/res/config.json"
+      mountPath: "/app/cmd/onboarding/res/config.json"
       subPath: config.json
       readOnly: true
     - name: agent-config

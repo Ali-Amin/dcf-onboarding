@@ -7,6 +7,7 @@ import (
 
 	"clever.secure-onboard.com/internal/agent/clients"
 	"clever.secure-onboard.com/internal/config"
+	"clever.secure-onboard.com/internal/onboarding/auth"
 	"clever.secure-onboard.com/internal/onboarding/discovery"
 	"clever.secure-onboard.com/internal/onboarding/verifier"
 	"clever.secure-onboard.com/pkg/contracts"
@@ -69,4 +70,16 @@ func GetFileExtension(cfgPath string) string {
 		return tokens[1]
 	}
 	return tokens[0]
+}
+
+func NewAuthenticator(
+	info config.AuthInfo,
+	logger interfaces.Logger,
+) (interfaces.Authenticator, error) {
+	switch info.Type {
+	case contracts.FixedBasic:
+		return auth.NewFixedBasicAuth(logger)
+	default:
+		return nil, errors.New("Unknown authenticator type: " + string(info.Type))
+	}
 }

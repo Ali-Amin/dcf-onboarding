@@ -30,6 +30,7 @@ func NewAnnotatorWorker(
 }
 
 func (w *AnnotatorWorker) Start() {
+	w.logger.Write(slog.LevelDebug, "Waiting for signal to publish annotations...")
 	shouldAnnotate := <-w.ready
 	if !shouldAnnotate {
 		w.logger.Write(slog.LevelInfo, "Received signal to not publishing annotations")

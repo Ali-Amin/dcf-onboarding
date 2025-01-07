@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"clever.secure-onboard.com/pkg/contracts"
-	"github.com/google/uuid"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	sdkContracts "github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 )
@@ -26,8 +25,8 @@ func (a *DeviceIdentityAnnotator) Do(
 	ctx context.Context,
 	data []byte,
 ) (sdkContracts.Annotation, error) {
-	key := uuid.NewString()
-	hostname, _ := os.Hostname()
+	key := string(data)          // Device ID of which the annotation belongs to
+	hostname, _ := os.Hostname() // Hostname of the host publishing the annotation
 	isSatisfied := false
 	hasTPM := ctx.Value(contracts.HasTPM)
 	if hasTPM != nil {

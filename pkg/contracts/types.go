@@ -47,3 +47,12 @@ type NodeDiscovererType string
 const (
 	K8s NodeDiscovererType = "k8s"
 )
+
+type AuthenticatorType string
+
+const FixedBasic AuthenticatorType = "basic-fixed"
+
+const (
+	TrustedActorUsername = "ONBOARDER_USERNAME"
+	TrustedActorPassowrd = "ONBOARDER_PASSWORD"
+)

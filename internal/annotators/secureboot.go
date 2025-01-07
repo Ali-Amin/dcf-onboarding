@@ -9,7 +9,6 @@ import (
 	"os"
 
 	"github.com/foxboron/go-uefi/efivarfs"
-	"github.com/google/uuid"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
 	sdkContracts "github.com/project-alvarium/alvarium-sdk-go/pkg/contracts"
@@ -25,8 +24,8 @@ func NewSecureBootAnnotator(sdkCFG config.SdkInfo) interfaces.Annotator {
 }
 
 func (a *SecureBootAnnotator) Do(ctx context.Context, data []byte) (contracts.Annotation, error) {
-	key := uuid.NewString()
-	hostname, _ := os.Hostname()
+	key := string(data)          // Device ID of which the annotation is for
+	hostname, _ := os.Hostname() // Hostname of the host publishing the annotation
 
 	efifs := efivarfs.NewFS().Open()
 	isSatisfied, _ := efifs.GetSecureBoot()

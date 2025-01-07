@@ -36,6 +36,7 @@ func NewIdentityClaimWorker(
 func (w *IdentityClaimWorker) Start() bool {
 	hasTPM, _ := w.tpmClient.HasTPM()
 	if !hasTPM {
+		w.trySendTPMStatus(hasTPM)
 		w.logger.Error("No TPM found, shutting down...")
 		return false
 	}
@@ -93,6 +94,7 @@ func (w *IdentityClaimWorker) sendIdentityClaim() {
 		signature, err := w.tpmClient.Sign(challenge)
 		if err != nil {
 			w.logger.Error("failed to sign challenge: " + err.Error())
+			w.ready <- false
 			os.Exit(1)
 		}
 
@@ -114,5 +116,6 @@ func (w *IdentityClaimWorker) sendIdentityClaim() {
 			continue
 		}
 		passed = true
+		w.ready <- true
 	}
 }
