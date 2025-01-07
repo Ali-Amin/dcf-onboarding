@@ -41,7 +41,12 @@ const (
 	headerValueJson      string = "application/json"
 )
 
-func LoadRestRoutes(r *mux.Router, dbArango *db.ArangoClient, dbMongo *db.MongoProvider, logger interfaces.Logger) {
+func LoadRestRoutes(
+	r *mux.Router,
+	dbArango *db.ArangoClient,
+	dbMongo *db.MongoProvider,
+	logger interfaces.Logger,
+) {
 	r.HandleFunc("/",
 		func(w http.ResponseWriter, r *http.Request) {
 			getIndexHandler(w, r, logger)
@@ -71,6 +76,39 @@ func LoadRestRoutes(r *mux.Router, dbArango *db.ArangoClient, dbMongo *db.MongoP
 		func(w http.ResponseWriter, r *http.Request) {
 			getHosts(w, r, dbArango, logger)
 		}).Methods(http.MethodGet, http.MethodOptions)
+
+	r.HandleFunc("/hosts/{id}/confidence",
+		func(w http.ResponseWriter, r *http.Request) {
+			getHostConfidence(w, r, dbArango)
+		}).Methods(http.MethodGet, http.MethodOptions)
+}
+
+func getHostConfidence(
+	w http.ResponseWriter,
+	r *http.Request,
+	db *db.ArangoClient,
+) {
+	defer r.Body.Close()
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	scores, err := db.QueryHostScore(r.Context(), id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	s, err := json.Marshal(scores)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Header().Add(headerKeyContentType, headerValueJson)
+	w.Header().Add(headerCORS, headerCORSValue)
+	w.WriteHeader(http.StatusOK)
+	w.Write(s)
 }
 
 func getIndexHandler(w http.ResponseWriter, r *http.Request, logger interfaces.Logger) {
@@ -78,13 +116,22 @@ func getIndexHandler(w http.ResponseWriter, r *http.Request, logger interfaces.L
 	start := time.Now()
 	w.Header().Add(headerCORS, headerCORSValue)
 	w.Header().Add(headerKeyContentType, "text/html")
-	w.Write([]byte("<html><head><title>Populator API</title></head><body><h2>Populator API</h2></body></html>"))
+	w.Write(
+		[]byte(
+			"<html><head><title>Populator API</title></head><body><h2>Populator API</h2></body></html>",
+		),
+	)
 
 	elapsed := time.Now().Sub(start)
 	logger.Write(slog.LevelDebug, fmt.Sprintf("getIndexHandler OK %v", elapsed))
 }
 
-func getDocumentCountHandler(w http.ResponseWriter, r *http.Request, dbMongo *db.MongoProvider, logger interfaces.Logger) {
+func getDocumentCountHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+	dbMongo *db.MongoProvider,
+	logger interfaces.Logger,
+) {
 	defer r.Body.Close()
 
 	count, err := dbMongo.CountDocuments(r.Context())
@@ -185,7 +232,13 @@ func getSampleDataHandler(
 	w.Write(b)
 }
 
-func getAnnotationsHandler(w http.ResponseWriter, r *http.Request, dbMongo *db.MongoProvider, dbArango *db.ArangoClient, logger interfaces.Logger) {
+func getAnnotationsHandler(
+	w http.ResponseWriter,
+	r *http.Request,
+	dbMongo *db.MongoProvider,
+	dbArango *db.ArangoClient,
+	logger interfaces.Logger,
+) {
 	defer r.Body.Close()
 
 	vars := mux.Vars(r)

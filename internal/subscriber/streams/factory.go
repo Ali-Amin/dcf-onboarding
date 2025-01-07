@@ -23,10 +23,16 @@ import (
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
 	"github.com/project-alvarium/scoring-apps-go/internal/subscriber"
+	"github.com/project-alvarium/scoring-apps-go/internal/subscriber/streams/hedera"
 	"github.com/project-alvarium/scoring-apps-go/internal/subscriber/streams/mqtt"
 )
 
-func NewSubscriber(cfg config.StreamInfo, pub chan message.SubscribeWrapper, key string, logger interfaces.Logger) (subscriber.Subscriber, error) {
+func NewSubscriber(
+	cfg config.StreamInfo,
+	pub chan message.SubscribeWrapper,
+	key string,
+	logger interfaces.Logger,
+) (subscriber.Subscriber, error) {
 	var sub subscriber.Subscriber
 
 	switch cfg.Type {
@@ -36,6 +42,16 @@ func NewSubscriber(cfg config.StreamInfo, pub chan message.SubscribeWrapper, key
 			return nil, errors.New("unknown type cast to MqttConfig failed")
 		}
 		sub = mqtt.NewMqttSubscriber(endpoint, pub, logger)
+	case contracts.HederaStream:
+		endpoint, ok := cfg.Config.(config.HederaConfig)
+		if !ok {
+			return nil, errors.New("unknown type cast to HederaConfig failed")
+		}
+		var err error
+		sub, err = hedera.NewHederaSubscriber(endpoint, pub, logger)
+		if err != nil {
+			return nil, err
+		}
 	default:
 		return nil, errors.New(fmt.Sprintf("unrecognized stream provider type %s", cfg.Type))
 	}

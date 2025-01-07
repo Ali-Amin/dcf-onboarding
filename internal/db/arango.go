@@ -159,6 +159,39 @@ func (c *ArangoClient) QueryAnnotations(
 	return annotations, nil
 }
 
+func (c *ArangoClient) QueryHostScore(
+	ctx context.Context,
+	deviceID string,
+) (documents.Score, error) {
+	db, err := c.instance.Database(ctx, c.cfg.DatabaseName)
+	if err != nil {
+		return documents.Score{}, err
+	}
+
+	query := `FOR s IN scores FILTER @deviceid == s.dataRef AND @layer == s.layer RETURN s`
+	bindVars := map[string]interface{}{
+		"deviceid": deviceID,
+		"layer":    contracts.Host,
+	}
+	cursor, err := db.Query(ctx, query, bindVars)
+	if err != nil {
+		return documents.Score{}, err
+	}
+	defer cursor.Close()
+
+	var score documents.Score
+	for {
+		_, err := cursor.ReadDocument(ctx, &score)
+		if driver.IsNoMoreDocuments(err) {
+			break
+		} else if err != nil {
+			return documents.Score{}, err
+		}
+	}
+
+	return score, nil
+}
+
 func (c *ArangoClient) QueryScoreByLayer(
 	ctx context.Context,
 	key string,

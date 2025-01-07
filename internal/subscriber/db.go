@@ -39,7 +39,12 @@ type arangoClient struct {
 	logger interfaces.Logger
 }
 
-func NewArangoClient(sub chan message.SubscribeWrapper, pub chan string, dbConfig config.DatabaseInfo, logger interfaces.Logger) (arangoClient, error) {
+func NewArangoClient(
+	sub chan message.SubscribeWrapper,
+	pub chan string,
+	dbConfig config.DatabaseInfo,
+	logger interfaces.Logger,
+) (arangoClient, error) {
 	cfg, ok := dbConfig.Config.(config.ArangoConfig)
 	if !ok {
 		return arangoClient{}, fmt.Errorf("invalid config type, expected %s", config.DBArango)
@@ -93,7 +98,10 @@ func (c *arangoClient) BootstrapHandler(ctx context.Context, wg *sync.WaitGroup)
 					c.logger.Write(slog.LevelDebug, "handling mutate")
 					err = c.handleMutate(ctx, item.Content)
 				default:
-					c.logger.Write(slog.LevelDebug, "unrecognized item.Action value %s", item.Action)
+					c.logger.Write(
+						slog.LevelDebug,
+						"unrecognized item.Action value "+string(item.Action),
+					)
 					continue
 				}
 
@@ -299,7 +307,11 @@ func (c *arangoClient) initGraph(ctx context.Context) error {
 	return nil
 }
 
-func (c *arangoClient) createAnnotationDocument(ctx context.Context, a sdkContract.Annotation, collection driver.Collection) error {
+func (c *arangoClient) createAnnotationDocument(
+	ctx context.Context,
+	a sdkContract.Annotation,
+	collection driver.Collection,
+) error {
 	c.logger.Write(slog.LevelDebug, "annotation received: "+a.Tag)
 	doc := documents.NewAnnotation(a)
 	meta, err := collection.CreateDocument(ctx, doc)
@@ -311,7 +323,11 @@ func (c *arangoClient) createAnnotationDocument(ctx context.Context, a sdkContra
 	return nil
 }
 
-func (c *arangoClient) createDataDocument(ctx context.Context, documentKey string, collection driver.Collection) error {
+func (c *arangoClient) createDataDocument(
+	ctx context.Context,
+	documentKey string,
+	collection driver.Collection,
+) error {
 	exists, err := collection.DocumentExists(ctx, documentKey)
 	if err != nil {
 		return err
@@ -331,7 +347,13 @@ func (c *arangoClient) createDataDocument(ctx context.Context, documentKey strin
 	return nil
 }
 
-func (c *arangoClient) createEdge(ctx context.Context, src string, target string, collectionName string, graph driver.Graph) error {
+func (c *arangoClient) createEdge(
+	ctx context.Context,
+	src string,
+	target string,
+	collectionName string,
+	graph driver.Graph,
+) error {
 	edge, _, err := graph.EdgeCollection(ctx, collectionName)
 	if err != nil {
 		return err

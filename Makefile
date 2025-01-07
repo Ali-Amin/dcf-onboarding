@@ -81,7 +81,7 @@ docker_populator_api:
         -f cmd/populator-api/Dockerfile \
         --label "git_sha=$(GIT_SHA)" \
         -t octo-dcf/scoring-apps-go/docker-populator-api-go:$(GIT_SHA) \
-        -t octo-dcf/scoring-apps-go/docker-populator-api-go:$(DOCKER_TAG) \
+        -t alimamin/populator-api-go:secure-onboarding-v1\
         .
 	@echo "Finished populator-api-go docker image"
 
@@ -92,7 +92,7 @@ docker_subscriber:
         -f cmd/subscriber/Dockerfile \
         --label "git_sha=$(GIT_SHA)" \
         -t octo-dcf/scoring-apps-go/docker-subscriber-go:$(GIT_SHA) \
-        -t octo-dcf/scoring-apps-go/docker-subscriber-go:$(DOCKER_TAG) \
+        -t octo-dcf/scoring-apps-go/docker-subscriber-go:1.1.0\
         .
 	@echo "Finished subscriber-go docker image"
 

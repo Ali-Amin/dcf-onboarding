@@ -1,19 +1,23 @@
 {
   "sdk" : {
     "stream": {
-      "type": "mqtt",
+      "type": "hedera",
       "config": {
-        "clientId": "alvarium-subscriber",
-        "qos": 0,
-        "user": "mosquitto",
-        "password": "",
-        "provider": {
-          "host": "localhost",
-          "protocol": "tcp",
-          "port": 1883
-        },
-        "cleanness": false,
-        "topics": ["alvarium-test-topic"]
+	"netType":"local",
+	"consensus": {
+	  "host":"10.18.1.35",
+	  "port": 50211
+	},
+	"mirror": {
+	  "host":"10.18.1.35",
+	  "port": 5600
+	},
+	"accountId": "0.0.1004",
+	"privateKeyPath": "./cmd/subscriber/res/hedera.private",
+	"topics": ["0.0.1005"],
+	"defaultMaxTxFee": 10000,
+	"defaultMaxQueryPayment": 10000,
+	"shouldBroadcastTopic": false
       }
     }
   },

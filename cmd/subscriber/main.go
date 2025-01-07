@@ -17,8 +17,10 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
 	"log/slog"
+	"os"
+
+	"github.com/project-alvarium/alvarium-sdk-go/pkg/message"
 
 	sdkConfig "github.com/project-alvarium/alvarium-sdk-go/pkg/config"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/factories"
@@ -26,7 +28,6 @@ import (
 	"github.com/project-alvarium/scoring-apps-go/internal/config"
 	"github.com/project-alvarium/scoring-apps-go/internal/subscriber"
 	"github.com/project-alvarium/scoring-apps-go/internal/subscriber/streams"
-	"os"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	var configPath string
 	flag.StringVar(&configPath,
 		"cfg",
-		"./res/config.json",
+		"./cmd/subscriber/res/config-mqtt.json",
 		"Path to JSON configuration file.")
 	flag.Parse()
 
@@ -60,6 +61,10 @@ func main() {
 
 	chMessages := make(chan message.SubscribeWrapper)
 	sub, err := streams.NewSubscriber(cfg.Sdk.Stream, chMessages, cfg.Key, logger)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 	chKeys := make(chan string)
 	graph, err := subscriber.NewArangoClient(chMessages, chKeys, cfg.Database, logger)
