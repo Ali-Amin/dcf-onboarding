@@ -65,7 +65,10 @@ data:
       "server" : {
         "protocol": "http",
         "port":"3010",
-        "host":"0.0.0.0"
+        "host":"0.0.0.0",
+        "auth": {
+          "type": "basic-fixed" 
+        }
       },
       "sdk": {
         "annotators": [],

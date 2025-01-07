@@ -20,6 +20,16 @@ spec:
     env:
     - name: ANSIBLE_HOST_KEY_CHECKING
       value: "False"
+    - name: ONBOARDER_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: onboarder-credentials
+          key: onboarder.username
+    - name: ONBOARDER_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: onboarder-credentials
+          key: onboarder.password
     volumeMounts:
     - name: onboarder-config
       mountPath: "/app/cmd/onboarding/res/config.json"
