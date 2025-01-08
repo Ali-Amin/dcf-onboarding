@@ -29,6 +29,7 @@ const (
 	OnboarderURL         AnsibleVars = "onboarder_url"
 	CFGPath              AnsibleVars = "dcf_config"
 	PrivKeyPath          AnsibleVars = "private_key"
+	HederaPrivKeyPath    AnsibleVars = "hedera_private_key"
 )
 
 type TPMType string

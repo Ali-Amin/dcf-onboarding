@@ -62,12 +62,13 @@ func (d *NodeDiscovererInfo) UnmarshalJSON(data []byte) error {
 }
 
 type DaemonInfo struct {
-	PlaybookPath    string `json:"playbook,omitempty"`
-	OnboardingURL   string `json:"onboardingUrl,omitempty"`
-	BinaryPath      string `json:"binaryPath,omitempty"`
-	SystemdUnitPath string `json:"systemdUnitPath,omitempty"`
-	ConfigPath      string `json:"configPath,omitempty"`
-	PrivKeyPath     string `json:"privKeyPath,omitempty"`
+	PlaybookPath      string `json:"playbook,omitempty"`
+	OnboardingURL     string `json:"onboardingUrl,omitempty"`
+	BinaryPath        string `json:"binaryPath,omitempty"`
+	SystemdUnitPath   string `json:"systemdUnitPath,omitempty"`
+	ConfigPath        string `json:"configPath,omitempty"`
+	PrivKeyPath       string `json:"privKeyPath,omitempty"`
+	HederaPrivKeyPath string `json:"hederaPrivKeyPath,omitempty"`
 }
 
 func (c *OnboardingServiceConfig) AsString() string {

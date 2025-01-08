@@ -12,7 +12,8 @@
     "systemdUnitPath": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/systemd/dcfagent.service.j2",
     "onboardingUrl":"http://0.0.0.0:3010",
     "configPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/config.json",
-    "privKeyPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/private.key"
+    "privKeyPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/private.key",
+    "hederaPrivKeyPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/hedera.private"
   },
   "server" : {
     "protocol": "http",
@@ -38,19 +39,23 @@
       }
     },
     "stream": {
-      "type": "mqtt",
+      "type": "hedera",
       "config": {
-        "clientId": "onboarding-service",
-	"qos": 0,
-	"user": "mosquitto",
-	"password": "",
-	"provider": {
-	  "host": "0.0.0.0",
-	  "protocol": "tcp",
-	  "port": 1883
+	"netType": "local",
+	"consensus": {
+	  "host": "10.18.1.35",
+	  "port": 50211
 	},
-	"cleanness": false,
-	"topics": ["alvarium-test-topic"]
+	"mirror": {
+	  "host": "10.18.1.35",
+	  "port": 5600
+	},
+	"accountId": "0.0.1002",
+	"privateKeyPath": "./cmd/onboarder/res/hedera.private",
+	"topics": ["0.0.1003"],
+	"defaultMaxTxFee": 10000,
+	"defaultMaxQueryFee": 10000,
+	"shouldBroadcastTopic": false
       }
     },
     "layer": "host"

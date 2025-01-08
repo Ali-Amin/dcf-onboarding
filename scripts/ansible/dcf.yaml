@@ -2,13 +2,14 @@
 
 - hosts: all
   gather_facts: false
-  remote_user: ubuntu
+  remote_user: dcf
   become: true
   vars:
     agent_binary_path: na
     systemd_unit_path: na
     dcf_config: "{{ dcf_config }}"
     onboarder_url: "{{ onboarder_url }}"
+    hedera_private_key: "{{ hedera_private_key }}"
   tasks:
     - name: "Copy DCF agent binary"
       copy:
@@ -21,7 +22,7 @@
       template:
         src: "{{ systemd_unit_path }}"
         dest: /etc/systemd/system/dcfagent.service
-        owner: ubuntu
+        owner: dcf
         mode: 0644
 
     - name: "Copy DCF signautre private key"
@@ -30,6 +31,11 @@
         dest: /tmp/private.key
         mode: 0644
 
+    - name: "Copy hedera private key"
+      copy:
+        src: "{{ hedera_private_key }}"
+        dest: /tmp/hedera.private
+        mode: 0644
 
     - name: "Copy config file"
       copy:

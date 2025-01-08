@@ -43,6 +43,7 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 			string(contracts.OnboarderURL):         cfg.OnboardingURL,
 			string(contracts.CFGPath):              cfg.ConfigPath,
 			string(contracts.PrivKeyPath):          cfg.PrivKeyPath,
+			string(contracts.HederaPrivKeyPath):    cfg.HederaPrivKeyPath,
 		},
 	}
 
