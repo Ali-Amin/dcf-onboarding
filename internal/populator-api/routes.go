@@ -69,7 +69,7 @@ func LoadRestRoutes(
 
 	r.HandleFunc("/data/{id}/confidence",
 		func(w http.ResponseWriter, r *http.Request) {
-			getDataConfidence(w, r, dbMongo, dbArango, logger)
+			getDataConfidence(w, r, dbArango)
 		}).Methods(http.MethodGet, http.MethodOptions)
 
 	r.HandleFunc("/hosts",
@@ -81,6 +81,41 @@ func LoadRestRoutes(
 		func(w http.ResponseWriter, r *http.Request) {
 			getHostConfidence(w, r, dbArango)
 		}).Methods(http.MethodGet, http.MethodOptions)
+
+	r.HandleFunc("/applications/{id}/confidence",
+		func(w http.ResponseWriter, r *http.Request) {
+			getApplicationConfidence(w, r, dbArango)
+		}).Methods(http.MethodGet, http.MethodOptions)
+}
+
+func getApplicationConfidence(
+	w http.ResponseWriter,
+	r *http.Request,
+	db *db.ArangoClient,
+) {
+	defer r.Body.Close()
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	id = strings.ToUpper(id)
+
+	scores, err := db.QueryScore(r.Context(), id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	s, err := json.Marshal(scores)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Header().Add(headerKeyContentType, headerValueJson)
+	w.Header().Add(headerCORS, headerCORSValue)
+	w.WriteHeader(http.StatusOK)
+	w.Write(s)
 }
 
 func getHostConfidence(
@@ -251,19 +286,7 @@ func getAnnotationsHandler(
 		return
 	}
 
-	record, err := dbMongo.FetchById(r.Context(), id)
-	if err != nil {
-		logger.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	sampleData := models.SampleFromMongoRecord(record)
-	b, _ := json.Marshal(sampleData)
-	key := hashprovider.DeriveHash(b)
-
-	annotations, err := dbArango.QueryAnnotations(r.Context(), key)
+	annotations, err := dbArango.QueryAnnotations(r.Context(), strings.ToUpper(id))
 	if err != nil {
 		logger.Error(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -275,7 +298,7 @@ func getAnnotationsHandler(
 		Count:       len(annotations),
 		Annotations: annotations,
 	}
-	b, _ = json.Marshal(response)
+	b, _ := json.Marshal(response)
 	w.Header().Add(headerKeyContentType, headerValueJson)
 	w.Header().Add(headerCORS, headerCORSValue)
 	w.WriteHeader(http.StatusOK)
@@ -285,9 +308,7 @@ func getAnnotationsHandler(
 func getDataConfidence(
 	w http.ResponseWriter,
 	r *http.Request,
-	dbMongo *db.MongoProvider,
 	dbArango *db.ArangoClient,
-	logger interfaces.Logger,
 ) {
 	defer r.Body.Close()
 
@@ -308,19 +329,7 @@ func getDataConfidence(
 		return
 	}
 
-	record, err := dbMongo.FetchById(r.Context(), id)
-	if err != nil {
-		logger.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	data := models.SampleFromMongoRecord(record)
-	b, _ := json.Marshal(data)
-	key := hashprovider.DeriveHash(b)
-
-	scores, err := dbArango.QueryScoreByLayer(r.Context(), key, layer)
+	scores, err := dbArango.QueryScoreByLayer(r.Context(), strings.ToUpper(id), layer)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))

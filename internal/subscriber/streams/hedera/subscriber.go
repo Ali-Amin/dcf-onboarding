@@ -111,12 +111,16 @@ func (h *hederaSubscriber) Subscribe(ctx context.Context, wg *sync.WaitGroup) bo
 				)
 
 				var wrapper message.SubscribeWrapper
-				annotationListType := fmt.Sprintf("%T", []contracts.AnnotationList{})
+				annotationListType := fmt.Sprintf("%T", contracts.AnnotationList{})
 				err := json.Unmarshal(msg.Contents, &wrapper)
 				if err != nil || wrapper.MessageType != annotationListType {
 					h.logger.Write(
 						slog.LevelWarn,
-						"skipping message, not an annotation list",
+						fmt.Sprintf(
+							"skipping message, got type '%s', looking for '%s'",
+							wrapper.MessageType,
+							annotationListType,
+						),
 					)
 				} else {
 					h.pub <- wrapper
