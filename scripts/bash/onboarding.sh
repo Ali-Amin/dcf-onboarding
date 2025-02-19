@@ -88,6 +88,7 @@ elif [[ $1 == *"upload_key"* ]];then
 	echo "Creating DCF user for ansible playbooks"
 	useradd dcf -p $(perl -e 'print crypt($ARGV[0], "password")' "password");
 	usermod -G root dcf;
+	usermod -G sudo dcf
 
 	echo "Node ready for onboarding"
 fi

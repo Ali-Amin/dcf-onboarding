@@ -3,15 +3,18 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 
+	"clever.secure-onboard.com/internal/agent"
 	"clever.secure-onboard.com/internal/annotators"
 	"clever.secure-onboard.com/internal/bootstrap"
 	"clever.secure-onboard.com/internal/config"
 	"clever.secure-onboard.com/internal/logging"
 	onboarding "clever.secure-onboard.com/internal/onboarding/server"
 
+	"clever.secure-onboard.com/pkg/contracts"
 	"clever.secure-onboard.com/pkg/factories"
 	alvarium "github.com/project-alvarium/alvarium-sdk-go/pkg"
 	"github.com/project-alvarium/alvarium-sdk-go/pkg/interfaces"
@@ -47,17 +50,17 @@ func main() {
 	annotators := []interfaces.Annotator{annotators.NewDeviceIdentityAnnotator(cfg.AlvariumSDK)}
 	alvariumSDK := alvarium.NewSdk(annotators, cfg.AlvariumSDK, logger)
 
-	//	nodeDiscoverer, err := factories.NewNodeDiscoverer(cfg.NodeDiscoverer, logger)
-	//	if err != nil {
-	//		logger.Error(err.Error())
-	//		os.Exit(1)
-	//	}
+	nodeDiscoverer, err := factories.NewNodeDiscoverer(cfg.NodeDiscoverer, logger)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 	identityVerifier := factories.NewDeviceIdentityVerifier(alvariumSDK, logger)
 
-	//	nodeDiscoverer.OnNewNode(func(node contracts.Node) {
-	//		agent.RemoteInstall(cfg.Daemon, []string{node.IP}, logger)
-	//		logger.Write(slog.LevelDebug, fmt.Sprintf("Found node: %s", node))
-	//	})
+	nodeDiscoverer.OnNewNode(func(node contracts.Node) {
+		agent.RemoteInstall(cfg.Daemon, []string{node.IP}, logger)
+		logger.Write(slog.LevelDebug, fmt.Sprintf("Found node: %s", node))
+	})
 
 	auth, err := factories.NewAuthenticator(cfg.OnboardingServer.Auth, logger)
 	if err != nil {
@@ -69,7 +72,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(ctx, cancel, &cfg, []bootstrap.BootstrapHandler{
 		alvariumSDK.BootstrapHandler,
-		//	nodeDiscoverer.Bootstrap,
+		nodeDiscoverer.Bootstrap,
 		server.Bootstrap,
 	})
 }

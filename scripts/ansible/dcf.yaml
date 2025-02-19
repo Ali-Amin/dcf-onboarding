@@ -22,7 +22,7 @@
       template:
         src: "{{ systemd_unit_path }}"
         dest: /etc/systemd/system/dcfagent.service
-        owner: dcf
+        owner: root
         mode: 0644
 
     - name: "Copy DCF signautre private key"
