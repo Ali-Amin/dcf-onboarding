@@ -4,50 +4,50 @@ metadata:
   name: onboarder
 spec:
   tolerations:
-  - key: "node-role.kubernetes.io/control-plane"
-    operator: "Exists"
-    effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
   nodeSelector:
     kubernetes.io/hostname: clever-shradda-mast01
   containers:
-  - name: onboarding-service
-    image: alimamin/onboarding-service:1.1.4
-    command: ["onboarder", "-cfg", "/app/cmd/onboarding/res/config.json"]
-    ports:
-    - containerPort: 3010
-      hostIP: 10.18.1.30
-      hostPort: 30010
-    env:
-    - name: ANSIBLE_HOST_KEY_CHECKING
-      value: "False"
-    - name: ONBOARDER_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: onboarder-credentials
-          key: onboarder.username
-    - name: ONBOARDER_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: onboarder-credentials
-          key: onboarder.password
-    volumeMounts:
-    - name: onboarder-config
-      mountPath: "/app/cmd/onboarding/res/config.json"
-      subPath: config.json
-      readOnly: true
-    - name: agent-config
-      mountPath: "/app/agent-config.json"
-      subPath: agent-config.json
-      readOnly: true
-    - name: keys
-      mountPath: "/app/cmd/agent/res/keys/ed25519/"
-      readOnly: true
-    - name: hedera-key
-      mountPath: "/app/cmd/res/keys/hedera/"
-      readOnly: true
-    - name: kubeconfig
-      mountPath: "/app/kubeconfig"
-      readOnly: true
+    - name: onboarding-service
+      image: alimamin/onboarding-service:1.1.4
+      command: ["onboarder", "-cfg", "/app/cmd/onboarding/res/config.json"]
+      ports:
+        - containerPort: 3010
+          hostIP: 0.0.0.0
+          hostPort: 30010
+      env:
+        - name: ANSIBLE_HOST_KEY_CHECKING
+          value: "False"
+        - name: ONBOARDER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: onboarder-credentials
+              key: onboarder.username
+        - name: ONBOARDER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: onboarder-credentials
+              key: onboarder.password
+      volumeMounts:
+        - name: onboarder-config
+          mountPath: "/app/cmd/onboarding/res/config.json"
+          subPath: config.json
+          readOnly: true
+        - name: agent-config
+          mountPath: "/app/agent-config.json"
+          subPath: agent-config.json
+          readOnly: true
+        - name: keys
+          mountPath: "/app/cmd/agent/res/keys/ed25519/"
+          readOnly: true
+        - name: hedera-key
+          mountPath: "/app/cmd/res/keys/hedera/"
+          readOnly: true
+        - name: kubeconfig
+          mountPath: "/app/kubeconfig"
+          readOnly: true
   serviceAccountName: onboarder
   volumes:
     - name: onboarder-config
@@ -58,7 +58,7 @@ spec:
             path: "config.json"
     - name: agent-config
       configMap:
-        name: onboarder-config 
+        name: onboarder-config
         items:
           - key: "agent-config.json"
             path: "agent-config.json"

@@ -91,4 +91,11 @@ elif [[ $1 == *"upload_key"* ]];then
 	usermod -G sudo dcf
 
 	echo "Node ready for onboarding"
+elif [[ $1 == *"join_cluster"*]];then
+	CONTROL_PLANE=$3
+	BOOTSTRAP_TOKEN=$4
+	CA_CERT_HASH=$5
+	time_initiated=$(date +"%Y-%M-%dT%T.%8NZ")
+	kubeadm join $CONTROL_PLANE --token $BOOTSTRAP_TOKEN --discovery-token-ca-cert-hash $CA_CERT_HASH
+	echo $time_initiated >> time_file
 fi

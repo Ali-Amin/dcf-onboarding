@@ -72,7 +72,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	bootstrap.Run(ctx, cancel, &cfg, []bootstrap.BootstrapHandler{
 		alvariumSDK.BootstrapHandler,
-		nodeDiscoverer.Bootstrap,
 		server.Bootstrap,
+		nodeDiscoverer.Bootstrap,
 	})
 }

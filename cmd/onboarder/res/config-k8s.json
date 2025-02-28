@@ -10,15 +10,15 @@
     "playbook": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/ansible/dcf.yaml",
     "binaryPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/dcfagent",
     "systemdUnitPath": "/root/dev/CLEVER/secure-onboarding/onboarding/scripts/systemd/dcfagent.service.j2",
-    "onboardingUrl":"http://0.0.0.0:3010",
-    "configPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/config.json",
-    "privKeyPath":"/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/private.key",
+    "onboardingUrl": "http://0.0.0.0:3010",
+    "configPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/config.json",
+    "privKeyPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/private.key",
     "hederaPrivKeyPath": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/agent/res/hedera.private"
   },
-  "server" : {
+  "server": {
     "protocol": "http",
-    "port":"3010",
-    "host":"0.0.0.0",
+    "port": "3010",
+    "host": "0.0.0.0",
     "auth": {
       "type": "basic-fixed"
     }
@@ -30,32 +30,32 @@
     },
     "signature": {
       "public": {
-	"type": "ed25519",
-	"path": "./cmd/res/keys/public.key"
+        "type": "ed25519",
+        "path": "./cmd/res/keys/public.key"
       },
       "private": {
-	"type": "ed25519",
-	"path": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/onboarder/res/private.key"
+        "type": "ed25519",
+        "path": "/root/dev/CLEVER/secure-onboarding/onboarding/cmd/onboarder/res/private.key"
       }
     },
     "stream": {
       "type": "hedera",
       "config": {
-	"netType": "local",
-	"consensus": {
-	  "host": "10.18.1.35",
-	  "port": 50211
-	},
-	"mirror": {
-	  "host": "10.18.1.35",
-	  "port": 5600
-	},
-	"accountId": "0.0.1002",
-	"privateKeyPath": "./cmd/onboarder/res/hedera.private",
-	"topics": ["0.0.1003"],
-	"defaultMaxTxFee": 10000,
-	"defaultMaxQueryFee": 10000,
-	"shouldBroadcastTopic": false
+        "netType": "local",
+        "consensus": {
+          "host": "0.0.0.0",
+          "port": 50211
+        },
+        "mirror": {
+          "host": "0.0.0.0",
+          "port": 5600
+        },
+        "accountId": "0.0.1002",
+        "privateKeyPath": "./cmd/onboarder/res/hedera.private",
+        "topics": ["0.0.1003"],
+        "defaultMaxTxFee": 10000,
+        "defaultMaxQueryFee": 10000,
+        "shouldBroadcastTopic": false
       }
     },
     "layer": "host"

@@ -12,6 +12,7 @@ import (
 	"clever.secure-onboard.com/pkg/contracts"
 	"clever.secure-onboard.com/pkg/interfaces"
 	"github.com/apenella/go-ansible/v2/pkg/execute"
+	"github.com/apenella/go-ansible/v2/pkg/execute/configuration"
 	results "github.com/apenella/go-ansible/v2/pkg/execute/result/json"
 	"github.com/apenella/go-ansible/v2/pkg/execute/result/transformer"
 	"github.com/apenella/go-ansible/v2/pkg/playbook"
@@ -35,8 +36,8 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 		BecomeMethod: "sudo",
 		Inventory:    inventory.String(),
 		ExtraVars: map[string]interface{}{
-			"ansible_sudo_pass":                    "password",
-			"ansible_ssh_pass":                     "password",
+			"ansible_sudo_pass":                    "password_here",
+			"ansible_ssh_pass":                     "password_here",
 			"host_key_checking":                    false,
 			string(contracts.AgentPath):            cfg.BinaryPath,
 			string(contracts.AgentSystemdUnitPath): cfg.SystemdUnitPath,
@@ -56,11 +57,15 @@ func RemoteInstall(cfg config.DaemonInfo, hosts []string, logger interfaces.Logg
 	logger.Write(slog.LevelInfo, fmt.Sprintf("Running command on hosts: %s", cmd))
 
 	buff := new(bytes.Buffer)
-	exec := execute.NewDefaultExecute(
-		execute.WithCmd(playbookCMD),
-		execute.WithTransformers(
-			transformer.LogFormat(transformer.DefaultLogFormatLayout, transformer.Now),
+
+	exec := configuration.NewAnsibleWithConfigurationSettingsExecute(
+		execute.NewDefaultExecute(
+			execute.WithCmd(playbookCMD),
+			execute.WithTransformers(
+				transformer.LogFormat(transformer.DefaultLogFormatLayout, transformer.Now),
+			),
 		),
+		configuration.WithAnsiblePipelining(),
 	)
 
 	err := exec.Execute(context.Background())

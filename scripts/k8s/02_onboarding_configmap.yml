@@ -34,7 +34,7 @@ data:
           "user": "mosquitto",
           "password": "",
           "provider": {
-            "host": "10.18.1.33",
+            "host": "0.0.0.0",
             "protocol": "tcp",
             "port": 35010
           },
@@ -58,7 +58,7 @@ data:
         "playbook": "/app/scripts/ansible/dcf.yaml",
         "binaryPath": "/app/cmd/agent/dcfagent",
         "systemdUnitPath": "/app/scripts/systemd/dcfagent.service.j2",
-        "onboardingUrl": "http://10.18.1.30:30010",
+        "onboardingUrl": "0.0.0.0:30010",
         "configPath": "/app/agent-config.json",
         "privKeyPath": "/app/cmd/agent/res/private.key"
       },

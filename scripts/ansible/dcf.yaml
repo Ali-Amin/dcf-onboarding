@@ -31,12 +31,6 @@
         dest: /tmp/private.key
         mode: 0644
 
-    - name: "Copy hedera private key"
-      copy:
-        src: "{{ hedera_private_key }}"
-        dest: /tmp/hedera.private
-        mode: 0644
-
     - name: "Copy config file"
       copy:
         src: "{{ dcf_config }}"

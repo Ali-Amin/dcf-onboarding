@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"clever.secure-onboard.com/internal/config"
 	"clever.secure-onboard.com/pkg/contracts"
@@ -82,10 +83,18 @@ func (d *K8sNodeDiscoverer) Bootstrap(ctx context.Context, wg *sync.WaitGroup) b
 				switch e := event.Object.(type) {
 				case *corev1.Node:
 					d.logger.Write(slog.LevelInfo, fmt.Sprintf("Discovered new node %s", e.Status.Addresses))
-					d.onNewNode(contracts.NewNodeFromK8sNode(*e))
+					go d.onNewNode(contracts.NewNodeFromK8sNode(*e))
 				}
 			}
 		}
+	}()
+
+	wg.Add(1)
+	go func() { // TODO: Find an actual fix
+		time.Sleep(20 * time.Minute)
+		w, _ = d.client.CoreV1().
+			Nodes().
+			Watch(context.Background(), metav1.ListOptions{ResourceVersion: nodes.ResourceVersion})
 	}()
 
 	wg.Add(1)
